@@ -5,11 +5,4 @@ for f in (:+, :-,)
     end
 end
 
-for f in (:sin, :cos, :tan, :acos, :asin, :atan, :acosh, :asinh, :atanh)
-    @eval function (Base.$f)(field::F) where F<:AbstractPICDataStructure
-        @assert f1.grid == f2.grid "Incompatible grids"
-        F(($f).(field.data), field.grid)
-    end
-end
-
-LinearAlgebra.norm(field::VectorField) = ScalarField(norm.(field.data), field.grid)
+LinearAlgebra.norm(field::VectorField) = ScalarField(norm.(field), field.grid)
