@@ -1,6 +1,6 @@
 using PICDataStructures
-using Test
+using Test, SafeTestsets
 
 @testset "PICDataStructures.jl" begin
-    # Write your tests here.
+    @safetestset "Scalar fields" begin include("scalar.jl") end
 end

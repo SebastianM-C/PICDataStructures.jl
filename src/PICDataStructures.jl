@@ -1,8 +1,10 @@
 module PICDataStructures
 
-export ScalarField, ScalarVariable, VectorField, VectorVariable,
+export AbstractPICDataStructure,
+    ScalarField, ScalarVariable, VectorField, VectorVariable,
     subsample, slice,
-    scalarness, domain_type, domain_discretization
+    scalarness, domain_type, domain_discretization,
+    ScalarQuantity, VectorQuantity, LatticeGrid, ParticleGrid
 
 using LinearAlgebra
 using CoordinateTransformations
