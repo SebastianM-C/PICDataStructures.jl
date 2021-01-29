@@ -16,7 +16,7 @@ Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
 [compat]
 AbstractPlotting = "0.15"
-ArrayInterface = "2.14"
+ArrayInterface = "2.14, 3.0"
 CoordinateTransformations = "0.6"
 ImageTransformations = "0.8"
 IntervalSets = "0.5"
