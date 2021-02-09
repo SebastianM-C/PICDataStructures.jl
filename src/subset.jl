@@ -3,10 +3,9 @@ function ImageTransformations.imresize(f::AbstractPICDataStructure, target_size:
 end
 
 resize_grid(grid::NTuple, target_size...) = imresize.(grid, (target_size...,))
-resize_grid(grid::AbstractArray, target_size...) = imresize(grid, target_size...)
+resize_grid(grid::AbstractArray, target_size...) = imresize.(grid, target_size)
 
-
-function subsample(f::AbstractPICDataStructure, target_size...)
+function downsample(f::AbstractPICDataStructure, target_size...)
     all(size(f) .> target_size) ? imresize(f, target_size...) : f
 end
 
@@ -42,6 +41,7 @@ end
 
 function slice(::LatticeGrid, ::Type{<:Tuple}, f, dir, idx::Int)
     dim = dir_to_idx(dir)
+    @debug "Slice along $dir ($dim) at: $(f.grid[dim][idx]) (idx $idx)"
     data = selectdim(f.data, dim, idx)
     grid = filter(d->d ≠ f.grid[dim], f.grid)
 

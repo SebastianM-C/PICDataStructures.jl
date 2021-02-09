@@ -4,11 +4,11 @@ using Unitful
 @testset "Scalar field interface" begin
     grids = [
         (0:0.1:1,),
-        (0:0.1:1, 0:0.1:1),
-        (0:0.1:1, 0:0.1:1, 0:0.1:1),
+        (0:0.01:1, 0:0.01:1),
+        (0:0.005:1, 0:0.01:1, 0:0.01:1),
         (0:0.1:1,).*u"m",
-        (0:0.1:1, 0:0.1:1).*u"m",
-        (0:0.1:1, 0:0.1:1, 0:0.1:1).*u"m",
+        (0:0.01:1, 0:0.01:1).*u"m",
+        (0:0.005:1, 0:0.01:1, 0:0.01:1).*u"m",
     ]
     data_sets = [
         sin.(grids[1][1]),
@@ -54,6 +54,27 @@ using Unitful
             f2 = f .* 2
             @test typeof(f) == typeof(f2)
             @test f2.grid == f.grid
+        end
+
+        @testset "Downsampling" begin
+            if startswith(desc[i], "3D")
+                f_small = downsample(f, 150, 50, 50)
+            elseif startswith(desc[i], "2D")
+                f_small = downsample(f, 50, 50)
+            else
+                f_small = downsample(f, 5)
+            end
+            if startswith(desc[i], "3D")
+                @test size(f_small) == (150, 50, 50)
+            elseif startswith(desc[i], "2D")
+                @test size(f_small) == (50, 50)
+            else
+                @test size(f_small) == (5,)
+            end
+        end
+
+        @testset "Sclice" begin
+            # TODO: Add tests
         end
     end
 end
