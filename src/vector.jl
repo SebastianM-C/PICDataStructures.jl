@@ -4,7 +4,7 @@ struct VectorField{N,M,T,D<:AbstractArray{T,M},G} <: AbstractPICDataStructure{T,
 end
 
 struct VectorVariable{N,M,T,D<:AbstractArray{T,M},G} <: AbstractPICDataStructure{T,N}
-    data::T
+    data::D
     grid::G
 end
 
@@ -21,6 +21,12 @@ Base.@propagate_inbounds Base.getindex(f::VectorField{N}, i::Int) where N = SVec
 Base.@propagate_inbounds Base.setindex!(f::VectorField, v, i::Int) = f.data[i] = v
 Base.@propagate_inbounds Base.getindex(f::VectorVariable{N}, i::Int) where N = SVector{N}(f.data[i]...)
 Base.@propagate_inbounds Base.setindex!(f::VectorVariable, v, i::Int) = f.data[i] = v
+
+# Acessing the internal data storage by column names
+get_property(f, key) = Base.sym_in(key, propertynames(f)) ? getfield(f, key) : getproperty(f.data, key)
+
+Base.getproperty(f::VectorField, key::Symbol) = get_property(f, key)
+Base.getproperty(f::VectorVariable, key::Symbol) = get_property(f, key)
 
 vector_from(::Type{<:ScalarField}) = VectorField
 vector_from(::Type{<:ScalarVariable}) = VectorVariable
