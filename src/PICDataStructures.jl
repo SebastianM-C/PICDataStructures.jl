@@ -2,6 +2,7 @@ module PICDataStructures
 
 export AbstractPICDataStructure,
     ScalarField, ScalarVariable, VectorField, VectorVariable,
+    build_vector,
     downsample, slice,
     scalarness, domain_type, domain_discretization,
     ScalarQuantity, VectorQuantity, LatticeGrid, ParticleGrid
@@ -10,6 +11,7 @@ using LinearAlgebra
 using CoordinateTransformations
 using ImageTransformations
 using StaticArrays
+using StructArrays
 using RecursiveArrayTools
 using IntervalSets
 using ArrayInterface: parameterless_type

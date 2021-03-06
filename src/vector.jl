@@ -1,74 +1,48 @@
-struct VectorField{N,T,D<:AbstractArray{T,N},G} <: AbstractPICDataStructure{T,N}
+struct VectorField{N,M,T,D<:AbstractArray{T,M},G} <: AbstractPICDataStructure{T,N}
     data::D
     grid::G
 end
 
-struct VectorVariable{N,T,D<:AbstractArray{T,N},G} <: AbstractPICDataStructure{T,N}
-    data::T
+struct VectorVariable{N,M,T,D<:AbstractArray{T,M},G} <: AbstractPICDataStructure{T,N}
+    data::D
     grid::G
 end
 
-function VectorField(x::ScalarField)
-    data = map(i->SVector{1}(x.data[i]), eachindex(x.data))
-
-    VectorField(data, x.grid)
+function VectorField{N}(data::D, grid::G) where {N, M, T, D <: AbstractArray{T,M}, G}
+    VectorField{N, M, T, D, G}(data, grid)
 end
 
-function VectorField(x::ScalarField{N,T,G}, y::ScalarField{N,T,G}) where {N,T,G}
-    @assert x.grid == y.grid "Incompatible grids"
-    data = map(i->SVector{2}(x.data[i], y.data[i]), eachindex(x.data))
-
-    VectorField(data, x.grid)
+function VectorVariable{N}(data::D, grid::G) where {N, M, T, D <: AbstractArray{T,M}, G}
+    VectorVariable{N, M, T, D, G}(data, grid)
 end
 
-function VectorField(x::ScalarField{N,T,G}, y::ScalarField{N,T,G}, z::ScalarField{N,T,G}) where {N,T,G}
-    @assert x.grid == y.grid == z.grid "Incompatible grids"
-    data = map(i->SVector{3}(x.data[i], y.data[i], z.data[i]), eachindex(x.data))
+# Indexing
+Base.@propagate_inbounds Base.getindex(f::VectorField{N}, i::Int) where N = SVector{N}(f.data[i]...)
+Base.@propagate_inbounds Base.setindex!(f::VectorField, v, i::Int) = f.data[i] = v
+Base.@propagate_inbounds Base.getindex(f::VectorVariable{N}, i::Int) where N = SVector{N}(f.data[i]...)
+Base.@propagate_inbounds Base.setindex!(f::VectorVariable, v, i::Int) = f.data[i] = v
 
-    VectorField(data, x.grid)
+# Acessing the internal data storage by column names
+get_property(f, key) = Base.sym_in(key, propertynames(f)) ? getfield(f, key) : getproperty(f.data, key)
+
+Base.getproperty(f::VectorField, key::Symbol) = get_property(f, key)
+Base.getproperty(f::VectorVariable, key::Symbol) = get_property(f, key)
+
+vector_from(::Type{<:ScalarField}) = VectorField
+vector_from(::Type{<:ScalarVariable}) = VectorVariable
+scalar_from(::Type{<:VectorField}) = ScalarField
+scalar_from(::Type{<:VectorVariable}) = ScalarVariable
+
+function build_vector(components::NTuple{N, T}, names::NTuple{N, Symbol}) where {N, T}
+    data = StructArray(components; names)
+    x = first(components)
+
+    for c in components
+        if c.grid ≠ x.grid
+            @warn "Grids for vector variable may not be compatible"
+        end
+    end
+
+    vectortype = vector_from(T)
+    vectortype{N}(data, x.grid)
 end
-
-function VectorVariable(x::ScalarVariable)
-    data = map(i->SVector{1}(x.data[i]), eachindex(x.data))
-
-    VectorVariable(data, x.grid)
-end
-
-function VectorVariable(x::ScalarVariable{N,T,G}, y::ScalarVariable{N,T,G}) where {N,T,G}
-    @assert x.grid == y.grid "Incompatible grids"
-    data = map(i->SVector{2}(x.data[i], y.data[i]), eachindex(x.data))
-
-    VectorVariable(data, x.grid)
-end
-
-function VectorVariable(x::ScalarVariable{N,T,G}, y::ScalarVariable{N,T,G}, z::ScalarVariable{N,T,G}) where {N,T,G}
-    @assert x.grid == y.grid == z.grid "Incompatible grids"
-    data = map(i->SVector{3}(x.data[i], y.data[i], z.data[i]), eachindex(x.data))
-
-    VectorVariable(data, x.grid)
-end
-
-function VectorVariable(components::NTuple{N,T}) where {N,T}
-    data = map(i->begin
-            cs = map(c->getindex(c, i), components)
-            SVector{N}(cs...)
-        end,
-    eachindex(first(components)))
-
-    VectorField(data, data)
-end
-
-# Can we make this work with GG?
-# It currently gives: The function body AST defined by this @generated function is not pure.
-# This likely means it contains a closure or comprehension.
-# @generated function VectorField(X::Vararg{ScalarField{M,T,G}, N}) where {N,M,T,G}
-#     # How to generalize the assert?
-#     # @assert x.grid == y.grid == z.grid "Incompatible grids"
-#     quote
-#         data = map(i->begin
-#             @ncall $N SVector{$N} j->X[j].data[i]
-#         end, eachindex(x.data))
-
-#         VectorField(data, X[1].grid)
-#     end
-# end
