@@ -78,3 +78,53 @@ using Unitful
         end
     end
 end
+
+@testset "Scalar variable interface" begin
+    grid = collect(0:0.1:1)
+    data_sets = [
+        sin.(grid),
+        sin.(grid).*u"V/m",
+    ]
+    desc = [
+        "unitless",
+        "Unitful",
+    ]
+
+    @testset "$(desc[i])" for i in eachindex(desc)
+        data = data_sets[i]
+        f = ScalarVariable(data, grid)
+        @test f.data == data
+        @test f.grid == grid
+
+        T = typeof(f)
+        @test isconcretetype(T)
+
+        @testset "Traits" begin
+            @test scalarness(T) === ScalarQuantity()
+            @test domain_discretization(T) === ParticleGrid()
+            @test domain_type(T) === Array
+        end
+
+        @testset "Indexing" begin
+            @test size(f) == size(data)
+            @test f[begin:end] == data[begin:end]
+        end
+        @testset "Iteration" begin
+            @test all([fd == d for (fd, d) in zip(f, data)])
+        end
+        @testset "Broadcasting" begin
+            f2 = f .* 2
+            @test typeof(f) == typeof(f2)
+            @test f2.grid == f.grid
+        end
+
+        @testset "Downsampling" begin
+            @test_throws MethodError f_small = downsample(f, 5)
+            @test_broken size(f_small) == (5,)
+        end
+
+        @testset "Sclice" begin
+            # TODO: Add tests
+        end
+    end
+end
