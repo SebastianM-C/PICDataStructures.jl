@@ -12,15 +12,30 @@ function VectorField{N}(data::D, grid::G) where {N, M, T, D <: AbstractArray{T,M
     VectorField{N, M, T, D, G}(data, grid)
 end
 
+function VectorField(data::AbstractArray{T,M}, grid::G) where {N, M, P, G, S<:NTuple{N}, T<:NamedTuple{P,S}}
+    VectorField{N}(data, grid)
+end
+
 function VectorVariable{N}(data::D, grid::G) where {N, M, T, D <: AbstractArray{T,M}, G}
     VectorVariable{N, M, T, D, G}(data, grid)
 end
 
+function VectorVariable(data::AbstractArray{T,M}, grid::G) where {N, M, P, G, S<:NTuple{N}, T<:NamedTuple{P,S}}
+    VectorVariable{N}(data, grid)
+end
+
+function vector2nt(f::AbstractPICDataStructure, v::SVector)
+    # @debug typeof(f.data)
+    names = keys(fieldarrays(f.data))
+    (; zip(names, v)...)
+end
+
 # Indexing
 Base.@propagate_inbounds Base.getindex(f::VectorField{N}, i::Int) where N = SVector{N}(f.data[i]...)
-Base.@propagate_inbounds Base.setindex!(f::VectorField, v, i::Int) = f.data[i] = v
+Base.@propagate_inbounds Base.setindex!(f::VectorField, v::SVector, i::Int) = f.data[i] = vector2nt(f, v)
 Base.@propagate_inbounds Base.getindex(f::VectorVariable{N}, i::Int) where N = SVector{N}(f.data[i]...)
-Base.@propagate_inbounds Base.setindex!(f::VectorVariable, v, i::Int) = f.data[i] = v
+Base.@propagate_inbounds Base.setindex!(f::VectorVariable, v::SVector, i::Int) = f.data[i] = vector2nt(f, v)
+
 
 # Acessing the internal data storage by column names
 get_property(f, key) = Base.sym_in(key, propertynames(f)) ? getfield(f, key) : getproperty(f.data, key)

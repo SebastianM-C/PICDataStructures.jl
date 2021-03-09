@@ -22,6 +22,8 @@ using Unitful
     @test isconcretetype(typeof(vf))
     @test vf.x == f
 
+    @test vf[1,:] == vf.data[1,:]
+
     nvf = norm(vf)
 
     @test scalarness(typeof(nvf)) === ScalarQuantity()
