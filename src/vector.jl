@@ -37,7 +37,9 @@ end
 
 function vector2nt(data::StructArray, ::Type{<:SArray{Tuple{N},T}}) where {N,T}
     names = propertynames(data)
-    NamedTuple{names, NTuple{N,T}}
+    # @debug N
+
+    return NamedTuple{names, NTuple{N,T}}
 end
 
 function similar_data(data::StructArray{T}, ElType, dims) where T
@@ -62,6 +64,7 @@ Base.@propagate_inbounds function Base.setindex!(f::VectorVariable, v::SVector, 
 end
 
 Base.eltype(::VectorField{N,M,T}) where {N,M,T} = SVector{N,recursive_bottom_eltype(T)}
+Base.eltype(::VectorVariable{N,M,T}) where {N,M,T} = SVector{N,recursive_bottom_eltype(T)}
 
 function Base.similar(f::VectorField, ::Type{S}, dims::Dims) where S
     # @debug "Building similar vector field of type $S"
@@ -69,7 +72,7 @@ function Base.similar(f::VectorField, ::Type{S}, dims::Dims) where S
 end
 
 function Base.similar(f::VectorVariable, ::Type{S}, dims::Dims) where S
-    # @debug "Building similar vector field of type $S"
+    # @debug "Building similar vector variable of type $S"
     parameterless_type(f)(StructArray(similar(getfield(f, :data), S, dims)), getfield(f, :grid))
 end
 

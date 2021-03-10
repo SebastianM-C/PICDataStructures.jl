@@ -19,15 +19,22 @@ using Unitful
         @test domain_type(T) === Tuple
     end
 
-    @test isconcretetype(typeof(vf))
     @test vf.x == f
 
     @test vf[1,:] == getfield(vf, :data)[1,:]
 
-    nvf = norm(vf)
+    @testset "Broadcasting" begin
+        vf2 = vf .* 2
+        @test vf .* 1 == vf
+        @test typeof(vf2) == typeof(vf)
+        @test getfield(vf2, :grid) == getfield(vf, :grid)
+    end
 
-    @test scalarness(typeof(nvf)) === ScalarQuantity()
-    @test norm(vf[2,10]) == nvf[2,10]
+    @testset "LinearAlgebra" begin
+        nvf = norm(vf)
+        @test scalarness(typeof(nvf)) === ScalarQuantity()
+        @test norm(vf[2]) == nvf[2]
+    end
 end
 
 @testset "Vector variable interface" begin
@@ -46,7 +53,9 @@ end
         sv = ScalarVariable(data, grid)
         v = build_vector((sv, sv), (:x, :y))
 
-        @test v.grid == grid
+        @test getfield(v, :grid) == grid
+
+        @test v[1,:] == getfield(v, :data)[1,:]
 
         T = typeof(v)
         @test isconcretetype(T)
@@ -58,8 +67,17 @@ end
             @test domain_type(T) === Array
         end
 
-        nvf = norm(v)
-        @test scalarness(typeof(nvf)) === ScalarQuantity()
-        @test norm(v[2]) == nvf[2]
+        @testset "Broadcasting" begin
+            v2 = v .* 2
+            @test v .* 1 == v
+            @test typeof(v2) == typeof(v)
+            @test getfield(v2, :grid) == getfield(v, :grid)
+        end
+
+        @testset "LinearAlgebra" begin
+            nvf = norm(v)
+            @test scalarness(typeof(nvf)) === ScalarQuantity()
+            @test norm(v[2]) == nvf[2]
+        end
     end
 end
