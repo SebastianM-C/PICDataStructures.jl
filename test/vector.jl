@@ -80,4 +80,15 @@ end
             @test norm(v[2]) == nvf[2]
         end
     end
+
+    @testset "Units" begin
+        data1 = data_sets[1]
+        data2 = data_sets[2]
+        sv1 = ScalarVariable(data1, grid)
+        sv2 = ScalarVariable(data2, grid)
+        v1 = build_vector((sv1, sv1), (:x, :y))
+        v2 = build_vector((sv2, sv2), (:x, :y))
+
+        @test ustrip(v2) == v1
+    end
 end
