@@ -16,6 +16,10 @@ function VectorField(data::AbstractArray{T,M}, grid::G) where {N, M, P, G, S<:NT
     VectorField{N}(data, grid)
 end
 
+function VectorField(data::AbstractArray{T,M}, grid::G) where {N, M, G, T<:SArray{N}}
+    VectorField{N}(data, grid)
+end
+
 function VectorVariable{N}(data::D, grid::G) where {N, M, T, D <: AbstractArray{T,M}, G}
     VectorVariable{N, M, T, D, G}(data, grid)
 end
@@ -24,24 +28,53 @@ function VectorVariable(data::AbstractArray{T,M}, grid::G) where {N, M, P, G, S<
     VectorVariable{N}(data, grid)
 end
 
-function vector2nt(f::AbstractPICDataStructure, v::SVector)
-    # @debug typeof(f.data)
-    names = keys(fieldarrays(f.data))
-    (; zip(names, v)...)
+function vector2nt(f::AbstractPICDataStructure, v::SArray{Tuple{N},T}) where {N,T}
+    # @debug "Data type $(typeof(f.data)) and $(typeof(v))"
+    names = propertynames(f)
+    # @debug (; zip(names, v)...)
+    NamedTuple{names, NTuple{N,T}}(v)
+end
+
+function vector2nt(data::StructArray, ::Type{<:SArray{Tuple{N},T}}) where {N,T}
+    names = propertynames(data)
+    NamedTuple{names, NTuple{N,T}}
+end
+
+function similar_data(data::StructArray{T}, ElType, dims) where T
+    # @debug typeof(data) ElType
+    S = vector2nt(data, ElType)
+    StructArray{S}(map(typ -> similar(typ, dims), fieldarrays(data)))
 end
 
 # Indexing
-Base.@propagate_inbounds Base.getindex(f::VectorField{N}, i::Int) where N = SVector{N}(f.data[i]...)
-Base.@propagate_inbounds Base.setindex!(f::VectorField, v::SVector, i::Int) = f.data[i] = vector2nt(f, v)
-Base.@propagate_inbounds Base.getindex(f::VectorVariable{N}, i::Int) where N = SVector{N}(f.data[i]...)
-Base.@propagate_inbounds Base.setindex!(f::VectorVariable, v::SVector, i::Int) = f.data[i] = vector2nt(f, v)
+Base.@propagate_inbounds function Base.getindex(f::VectorField{N}, i::Int) where N
+    SVector{N}(getfield(f, :data)[i]...)
+end
+Base.@propagate_inbounds function Base.setindex!(f::VectorField, v::SVector, i::Int)
+    # @debug typeof(f.data)
+    getfield(f, :data)[i] = vector2nt(f, v)
+end
+Base.@propagate_inbounds function Base.getindex(f::VectorVariable{N}, i::Int) where N
+    SVector{N}(f.data[i]...)
+end
+Base.@propagate_inbounds function Base.setindex!(f::VectorVariable, v::SVector, i::Int)
+    getfield(f, :data)[i] = vector2nt(f, v)
+end
 
+Base.eltype(::VectorField{N,M,T}) where {N,M,T} = SVector{N,recursive_bottom_eltype(T)}
+
+function Base.similar(f::VectorField, ::Type{S}, dims::Dims) where S
+    # @debug "Building similar vector field of type $S"
+    parameterless_type(f)(StructArray(similar(getfield(f, :data), S, dims)), getfield(f, :grid))
+end
 
 # Acessing the internal data storage by column names
-get_property(f, key) = Base.sym_in(key, propertynames(f)) ? getfield(f, key) : getproperty(f.data, key)
+get_property(f, key) = getproperty(getfield(f, :data), key)
 
 Base.getproperty(f::VectorField, key::Symbol) = get_property(f, key)
 Base.getproperty(f::VectorVariable, key::Symbol) = get_property(f, key)
+Base.propertynames(f::VectorField) = propertynames(getfield(f, :data))
+Base.propertynames(f::VectorVariable) = propertynames(getfield(f, :data))
 
 vector_from(::Type{<:ScalarField}) = VectorField
 vector_from(::Type{<:ScalarVariable}) = VectorVariable
