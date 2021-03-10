@@ -55,7 +55,7 @@ Base.@propagate_inbounds function Base.setindex!(f::VectorField, v::SVector, i::
     getfield(f, :data)[i] = vector2nt(f, v)
 end
 Base.@propagate_inbounds function Base.getindex(f::VectorVariable{N}, i::Int) where N
-    SVector{N}(f.data[i]...)
+    SVector{N}(getfield(f, :data)[i]...)
 end
 Base.@propagate_inbounds function Base.setindex!(f::VectorVariable, v::SVector, i::Int)
     getfield(f, :data)[i] = vector2nt(f, v)
@@ -64,6 +64,11 @@ end
 Base.eltype(::VectorField{N,M,T}) where {N,M,T} = SVector{N,recursive_bottom_eltype(T)}
 
 function Base.similar(f::VectorField, ::Type{S}, dims::Dims) where S
+    # @debug "Building similar vector field of type $S"
+    parameterless_type(f)(StructArray(similar(getfield(f, :data), S, dims)), getfield(f, :grid))
+end
+
+function Base.similar(f::VectorVariable, ::Type{S}, dims::Dims) where S
     # @debug "Building similar vector field of type $S"
     parameterless_type(f)(StructArray(similar(getfield(f, :data), S, dims)), getfield(f, :grid))
 end

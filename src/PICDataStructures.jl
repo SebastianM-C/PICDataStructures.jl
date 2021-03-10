@@ -53,7 +53,7 @@ similar_data(data, ElType, dims) = similar(data, ElType, dims)
 
 function Base.similar(f::AbstractPICDataStructure, ::Type{S}, dims::Dims) where S
     # @debug "similar AbstractPICDataStructure"
-    parameterless_type(f)(similar(getfield(f, :data), S, dims), f.grid)
+    parameterless_type(f)(similar(getfield(f, :data), S, dims), getfield(f, :grid))
 end
 
 function Base.similar(bc::Broadcast.Broadcasted{Broadcast.ArrayStyle{AbstractPICDataStructure}}, ::Type{ElType}) where ElType
