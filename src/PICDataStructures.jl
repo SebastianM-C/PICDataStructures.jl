@@ -21,6 +21,7 @@ using AbstractPlotting
 
 abstract type AbstractPICDataStructure{T,N} <: AbstractArray{T,N} end
 
+include("grids.jl")
 include("scalar.jl")
 include("vector.jl")
 include("traits.jl")
