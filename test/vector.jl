@@ -3,7 +3,7 @@ using LinearAlgebra
 using Unitful
 
 @testset "Vector field interface" begin
-    grid = (0:0.01:1, 0:0.01:1)
+    grid = SparseAxisGrid((0:0.01:1, 0:0.01:1))
     data = [sin(x)*sin(y) for (x,y) in Iterators.product(grid...)]
 
     f = ScalarField(data, grid)
@@ -15,8 +15,8 @@ using Unitful
 
     @testset "Traits" begin
         @test scalarness(T) === VectorQuantity()
-        @test domain_discretization(T) === LatticeGrid()
-        @test domain_type(T) === Tuple
+        @test domain_discretization(T) === LatticeGrid{2}()
+        @test domain_type(T) <: SparseAxisGrid
     end
 
     @test vf.x == f
@@ -27,7 +27,7 @@ using Unitful
         vf2 = vf .* 2
         @test vf .* 1 == vf
         @test typeof(vf2) == typeof(vf)
-        @test getfield(vf2, :grid) == getfield(vf, :grid)
+        @test getfield(vf2, :grid) == getdomain(vf)
     end
 
     @testset "LinearAlgebra" begin
@@ -38,10 +38,10 @@ using Unitful
 end
 
 @testset "Vector variable interface" begin
-    grid = collect(0:0.1:1)
+    grid = ParticlePositions((collect(0:0.1:1),), (0.,), (1.,))
     data_sets = [
-        sin.(grid),
-        sin.(grid).*u"V/m",
+        sin.(first(grid)),
+        sin.(first(grid)).*u"V/m",
     ]
     desc = [
         "unitless",
@@ -53,7 +53,7 @@ end
         sv = ScalarVariable(data, grid)
         v = build_vector((sv, sv), (:x, :y))
 
-        @test getfield(v, :grid) == grid
+        @test getdomain(v) == grid
 
         @test v[1,:] == getfield(v, :data)[1,:]
 
@@ -64,14 +64,14 @@ end
         @testset "Traits" begin
             @test scalarness(T) === VectorQuantity()
             @test domain_discretization(T) === ParticleGrid()
-            @test domain_type(T) === Array
+            @test domain_type(T) <: ParticlePositions
         end
 
         @testset "Broadcasting" begin
             v2 = v .* 2
             @test v .* 1 == v
             @test typeof(v2) == typeof(v)
-            @test getfield(v2, :grid) == getfield(v, :grid)
+            @test getfield(v2, :grid) == getdomain(v)
         end
 
         @testset "LinearAlgebra" begin

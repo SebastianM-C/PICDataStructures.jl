@@ -42,6 +42,11 @@ function vector2nt(data::StructArray, ::Type{<:SArray{Tuple{N},T}}) where {N,T}
     return NamedTuple{names, NTuple{N,T}}
 end
 
+function vector2nt(::StructArray, eltype::Type{<:Number})
+    msg = "Cannot create vector with eltype $eltype. Are you trying to create a scalar?"
+    throw(ArgumentError(msg))
+end
+
 function similar_data(data::StructArray{T}, ElType, dims) where T
     # @debug typeof(data) ElType
     S = vector2nt(data, ElType)
@@ -68,12 +73,12 @@ Base.eltype(::VectorVariable{N,M,T}) where {N,M,T} = SVector{N,recursive_bottom_
 
 function Base.similar(f::VectorField, ::Type{S}, dims::Dims) where S
     # @debug "Building similar vector field of type $S"
-    parameterless_type(f)(StructArray(similar(getfield(f, :data), S, dims)), getfield(f, :grid))
+    parameterless_type(f)(StructArray(similar(getfield(f, :data), S, dims)), getdomain(f))
 end
 
 function Base.similar(f::VectorVariable, ::Type{S}, dims::Dims) where S
     # @debug "Building similar vector variable of type $S"
-    parameterless_type(f)(StructArray(similar(getfield(f, :data), S, dims)), getfield(f, :grid))
+    parameterless_type(f)(StructArray(similar(getfield(f, :data), S, dims)), getdomain(f))
 end
 
 # Acessing the internal data storage by column names
@@ -90,7 +95,10 @@ scalar_from(::Type{<:VectorField}) = ScalarField
 scalar_from(::Type{<:VectorVariable}) = ScalarVariable
 
 function build_vector(components::NTuple{N, T}, names::NTuple{N, Symbol}) where {N, T}
-    data = StructArray(components; names)
+    data_components = ntuple(N) do c
+        getfield(components[c], :data)
+    end
+    data = StructArray(data_components; names)
     x = first(components)
 
     for c in components

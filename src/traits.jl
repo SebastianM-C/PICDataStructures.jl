@@ -1,6 +1,6 @@
 struct ScalarQuantity end
 struct VectorQuantity end
-struct LatticeGrid end
+struct LatticeGrid{N} end
 struct ParticleGrid end
 
 scalarness(::Type{<:ScalarField}) = ScalarQuantity()
@@ -13,7 +13,7 @@ domain_type(::Type{<:ScalarVariable{N,T,D,G}}) where {N,T,D,G} = parameterless_t
 domain_type(::Type{<:VectorField{N,M,T,D,G}}) where {N,M,T,D,G} = parameterless_type(G)
 domain_type(::Type{<:VectorVariable{N,M,T,D,G}}) where {N,M,T,D,G} = parameterless_type(G)
 
-domain_discretization(::Type{<:ScalarField}) = LatticeGrid()
-domain_discretization(::Type{<:ScalarVariable}) = ParticleGrid()
-domain_discretization(::Type{<:VectorField}) = LatticeGrid()
-domain_discretization(::Type{<:VectorVariable}) = ParticleGrid()
+domain_discretization(::Type{<:ScalarField{N}}) where N = LatticeGrid{N}()
+domain_discretization(::Type{<:ScalarVariable}) where N = ParticleGrid()
+domain_discretization(::Type{<:VectorField{N}}) where N = LatticeGrid{N}()
+domain_discretization(::Type{<:VectorVariable}) where N = ParticleGrid()

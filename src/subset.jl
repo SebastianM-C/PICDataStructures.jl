@@ -2,8 +2,21 @@ function ImageTransformations.imresize(f::AbstractPICDataStructure, target_size:
     parameterless_type(f)(imresize(f.data, target_size...), resize_grid(f.grid, target_size...))
 end
 
-resize_grid(grid::NTuple, target_size...) = imresize.(grid, (target_size...,))
-resize_grid(grid::AbstractArray, target_size...) = imresize.(grid, target_size)
+function resize_grid(g::AbstractAxisGrid{N}, target_size...) where N
+    rg = ntuple(N) do i
+        dim, t = g.grid[i], target_size[i]
+        imresize(dim, t)
+    end
+    AxisGrid(rg)
+end
+
+function resize_grid(g::ParticlePositions, target_size)
+    N = length(g)
+    rg = ntuple(N) do i
+        imresize(g.grid[i], target_size)
+    end
+    ParticlePositions(rg, g.minvals, g.maxvals)
+end
 
 function downsample(f::AbstractPICDataStructure, target_size...)
     all(size(f) .> target_size) ? imresize(f, target_size...) : f
@@ -29,7 +42,9 @@ function slice(::ParticleGrid, ::Type{<:Tuple}, f, dir, slice_location, ϵ)
     dim = dir_to_idx(dir)
     idxs = filter(i-> f.grid[dim][i] ∈ slice_location ± ϵ, axes(f.grid[dim], 1))
     data = view(f.data, idxs)
-    grid = ntuple(i->f.grid[i][idxs], Val(N))
+    grid_dims = filter(i->i≠dim, axes(f.grid)[1])
+    N = length(grid_dims)
+    grid = ntuple(i->f.grid[grid_dims[i]][idxs], N)
 
     parameterless_type(f)(data, grid)
 end
