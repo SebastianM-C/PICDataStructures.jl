@@ -73,10 +73,16 @@ using Unitful
                 @test size(f_small) == (5,)
             end
         end
+    end
+    @testset "Sclicing" begin
+        data = data_sets[3]
+        grid = grids[3]
 
-        @testset "Sclice" begin
-            # TODO: Add tests
-        end
+        f = ScalarField(data, grid)
+
+        fs = slice(f, 1, 5)
+        fs1 = slice(f, 1, 0.5)
+        @test f[5, :, :] == fs
     end
 
     @testset "Unit handling" begin

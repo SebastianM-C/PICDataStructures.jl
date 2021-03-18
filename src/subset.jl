@@ -36,29 +36,32 @@ end
 
 dir_to_idx(i::Int) = i
 
-slice(f::T, args...) where T <: AbstractPICDataStructure = slice(domain_discretization(T), domain_type(T), f, args...)
+slice(f::T, args...) where T <: AbstractPICDataStructure = slice(domain_discretization(T), f, args...)
 
-function slice(::ParticleGrid, ::Type{<:Tuple}, f, dir, slice_location, ϵ)
+function slice(::ParticleGrid, f, dir, slice_location, ϵ)
     dim = dir_to_idx(dir)
-    idxs = filter(i-> f.grid[dim][i] ∈ slice_location ± ϵ, axes(f.grid[dim], 1))
-    data = view(f.data, idxs)
-    grid_dims = filter(i->i≠dim, axes(f.grid)[1])
+    grid = getdomain(f)
+    idxs = filter(i-> grid[dim][i] ∈ slice_location ± ϵ, axes(grid[dim], 1))
+    data = view(getfileld(f, :data), idxs)
+    grid_dims = filter(i->i≠dim, axes(grid)[1])
     N = length(grid_dims)
-    grid = ntuple(i->f.grid[grid_dims[i]][idxs], N)
+    grid = ntuple(i->grid[grid_dims[i]][idxs], N)
 
     parameterless_type(f)(data, grid)
 end
 
-function slice(::LatticeGrid, ::Type{<:Tuple}, f, dir, slice_location)
-    m, idx = findmin(map(x->abs(x-slice_location), f.grid[dim]))
-    slice(LatticeGrid(), Type{Tuple}(), f, dir, idx)
-end
-
-function slice(::LatticeGrid, ::Type{<:Tuple}, f, dir, idx::Int)
+function slice(::LatticeGrid, f, dir, slice_location)
     dim = dir_to_idx(dir)
-    @debug "Slice along $dir ($dim) at: $(f.grid[dim][idx]) (idx $idx)"
-    data = selectdim(f.data, dim, idx)
-    grid = filter(d->d ≠ f.grid[dim], f.grid)
+    m, idx = findmin(map(x->abs(x-slice_location), getdomain(f)[dim]))
+    slice(f, dir, idx)
+end
 
-    parameterless_type(f)(data, grid)
+function slice(::LatticeGrid, f, dir, idx::Int)
+    dim = dir_to_idx(dir)
+    grid = getdomain(f)
+    @debug "Slice along $dir ($dim) at: $(grid[dim][idx]) (idx $idx)"
+    data = selectdim(f.data, dim, idx)
+    grid_slice = filter(d->d ≠ grid[dim], grid.grid)
+
+    parameterless_type(f)(data, parameterless_type(grid)(grid_slice))
 end
