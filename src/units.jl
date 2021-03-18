@@ -7,7 +7,27 @@ end
 
 ustrip_data(data) = ustrip.(data)
 ustrip_data(data::StructArray) = StructArray(map(ustrip, fieldarrays(data)))
-ustrip_grid(grid::AbstractGrid) = map.(ustrip, grid)
+
+function ustrip_grid(g::NTuple{N}) where N
+    ntuple(N) do i
+        ustrip.(g[i])
+    end
+end
+
+function ustrip_grid(g::AbstractAxisGrid)
+    AxisGrid(ustrip_grid(g.grid))
+end
+
+function ustrip_grid(g::ParticlePositions{N}) where N
+    ug = ustrip_grid(g.grid)
+    min = ntuple(N) do i
+        ustrip(g.minvals[i])
+    end
+    max = ntuple(N) do i
+        ustrip(g.maxvals[i])
+    end
+    ParticlePositions(ug, min, max)
+end
 
 for f in (:uconvert, :ustrip)
     @eval begin

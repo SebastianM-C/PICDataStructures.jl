@@ -85,8 +85,8 @@ using Unitful
         data_u = data_sets[6]
         grid_u = grids[6]
 
-        f = ScalarVariable(data, grid)
-        f_u = ScalarVariable(data_u, grid_u)
+        f = ScalarField(data, grid)
+        f_u = ScalarField(data_u, grid_u)
 
         @test ustrip(f_u) == f
     end
