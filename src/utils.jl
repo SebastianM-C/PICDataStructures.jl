@@ -12,3 +12,15 @@ Base.minimum(g::ParticlePositions) = g.minvals
 Base.maximum(g::ParticlePositions) = g.maxvals
 
 getdomain(f::AbstractPICDataStructure) = getfield(f, :grid)
+
+function broadcast_grid(f, g::NTuple{N}) where N
+    ntuple(N) do i
+        f.(g[i])
+    end
+end
+
+function broadcast_grid(f, arg, g::NTuple{N}) where N
+    ntuple(N) do i
+        f.(arg, g[i])
+    end
+end
