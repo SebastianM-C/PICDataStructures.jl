@@ -19,3 +19,5 @@ Base.eltype(g::AbstractGrid{N,T}) where {N,T} = eltype(g.grid)
 
 Base.length(g::AbstractGrid) = length(g.grid)
 Base.iterate(g::AbstractGrid, state...) = iterate(g.grid, state...)
+
+Base.@propagate_inbounds Base.getindex(g::AbstractGrid, i) = getfield(g, :grid)[i]
