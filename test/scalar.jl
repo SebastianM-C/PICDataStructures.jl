@@ -78,6 +78,18 @@ using Unitful
             # TODO: Add tests
         end
     end
+
+    @testset "Unit handling" begin
+        data = data_sets[3]
+        grid = grids[3]
+        data_u = data_sets[6]
+        grid_u = grids[6]
+
+        f = ScalarVariable(data, grid)
+        f_u = ScalarVariable(data_u, grid_u)
+
+        @test ustrip(f_u) == f
+    end
 end
 
 @testset "Scalar variable interface" begin
@@ -127,5 +139,15 @@ end
         @testset "Sclice" begin
             # TODO: Add tests
         end
+    end
+
+    @testset "Unit handling" begin
+        data = data_sets[1]
+        data_u = data_sets[2]
+
+        f = ScalarVariable(data, grid)
+        f_u = ScalarVariable(data_u, grid)
+
+        @test ustrip(f_u) == f
     end
 end
