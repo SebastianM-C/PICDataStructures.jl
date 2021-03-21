@@ -23,7 +23,7 @@ function Unitful.ustrip(g::ParticlePositions{N}) where N
     max = ntuple(N) do i
         ustrip(g.maxvals[i])
     end
-    ParticlePositions(ug, min, max)
+    ParticlePositions(ug, MVector(min), MVector(max))
 end
 
 for f in (:uconvert, :ustrip)
@@ -34,12 +34,12 @@ for f in (:uconvert, :ustrip)
         function (Unitful.$f)(units::Units, g::ParticlePositions{N}) where N
             ug = broadcast_grid($f, units, g.grid)
             min = ntuple(N) do i
-                $f(g.minvals[i])
+                $f(units, g.minvals[i])
             end
             max = ntuple(N) do i
-                $f(g.maxvals[i])
+                $f(units, g.maxvals[i])
             end
-            ParticlePositions(ug, min, max)
+            ParticlePositions(ug, MVector(min), MVector(max))
         end
         function (Unitful.$f)(u_data::Units, f::AbstractPICDataStructure)
             data = map(d->($f)(u_data, d), unwrapdata(f))

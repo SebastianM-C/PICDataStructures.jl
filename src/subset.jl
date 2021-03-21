@@ -36,18 +36,53 @@ end
 
 dir_to_idx(i::Int) = i
 
+function Base.dropdims(grid::AbstractAxisGrid, dim)
+    g = filter(d->d ≠ grid[dim], grid.grid)
+    parameterless_type(grid)(g)
+end
+
+function Base.dropdims(grid::ParticlePositions{N}, dim, idxs) where N
+    selected_dims = filter(i->i≠dim, Base.OneTo(N))
+    g = ntuple(N-1) do i
+        grid[selected_dims[i]][idxs]
+    end
+    if(any(isempty.(g)))
+        return ParticlePositions((Nothing[],), (nothing,), (nothing,))
+    end
+    mins = ntuple(N-1) do i
+        minimum(g[i])
+    end
+    maxs = ntuple(N-1) do i
+        maximum(g[i])
+    end
+
+    ParticlePositions(g, MVector(mins), MVector(maxs))
+end
+
 slice(f::T, args...) where T <: AbstractPICDataStructure = slice(domain_discretization(T), f, args...)
 
 function slice(::ParticleGrid, f, dir, slice_location, ϵ)
     dim = dir_to_idx(dir)
     grid = getdomain(f)
-    idxs = filter(i-> grid[dim][i] ∈ slice_location ± ϵ, axes(grid[dim], 1))
-    data = view(getfileld(f, :data), idxs)
-    grid_dims = filter(i->i≠dim, axes(grid)[1])
-    N = length(grid_dims)
-    grid = ntuple(i->grid[grid_dims[i]][idxs], N)
+    idxs = filter(i->grid[dim][i] ∈ slice_location ± ϵ, axes(grid[dim], 1))
 
-    parameterless_type(f)(data, grid)
+    @debug "Slice at $slice_location gives $(length(idxs)) points"
+    data = view(unwrapdata(f), idxs)
+    grid_slice = dropdims(grid, dim, idxs)
+
+    parameterless_type(f)(data, grid_slice)
+end
+
+function slice(::ParticleGrid, f, dir, idx::Int, ϵ)
+    dim = dir_to_idx(dir)
+    grid = getdomain(f)
+    idxs = filter(i->grid[dim][i] ∈ grid[dim][idx] ± ϵ, axes(grid[dim], 1))
+
+    @debug "Slice at index $idx gives $(length(idxs)) points"
+    data = view(unwrapdata(f), idxs)
+    grid_slice = dropdims(grid, dim, idxs)
+
+    parameterless_type(f)(data, grid_slice)
 end
 
 function slice(::LatticeGrid, f, dir, slice_location)
@@ -61,6 +96,7 @@ function slice(::LatticeGrid, f, dir, idx::Int)
     grid = getdomain(f)
     @debug "Slice along $dir ($dim) at: $(grid[dim][idx]) (idx $idx)"
     data = selectdim(unwrapdata(f), dim, idx)
+    grid_slice = dropdims(grid, dim)
 
-    parameterless_type(f)(data, parameterless_type(grid)(grid_slice))
+    parameterless_type(f)(data, grid_slice)
 end
