@@ -12,7 +12,7 @@ end
 
 function Base.show(io::IO, m::MIME"text/plain", f::AbstractPICDataStructure)
     show(io, m, scalarness(typeof(f)))
-    data = getfield(f, :data)
+    data = unwrapdata(f)
     grid = getdomain(f)
     print(io, " with data:\n")
     ctx = IOContext(io, :limit=>true, :compact=>true, :displaysize => (10,50))
