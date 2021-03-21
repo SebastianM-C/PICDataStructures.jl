@@ -38,7 +38,7 @@ using Unitful
 end
 
 @testset "Vector variable interface" begin
-    grid = ParticlePositions((collect(0:0.1:1),), (0.,), (1.,))
+    grid = ParticlePositions((collect(0:0.1:1),))
     data_sets = [
         sin.(first(grid)),
         sin.(first(grid)).*u"V/m",

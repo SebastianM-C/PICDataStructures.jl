@@ -11,8 +11,25 @@ end
 
 struct ParticlePositions{N,T,V<:AbstractVector{T}} <: AbstractGrid{N,T}
     grid::NTuple{N,V}
-    minvals::NTuple{N,T}
-    maxvals::NTuple{N,T}
+    minvals::MVector{N,T}
+    maxvals::MVector{N,T}
+end
+
+function ParticlePositions(grid)
+    mins = MVector(map(minimum, grid))
+    maxs = MVector(map(maximum, grid))
+
+    ParticlePositions(grid, mins, maxs)
+end
+
+function ParticlePositions{N,T}() where {N,T}
+    grid = ntuple(N) do i
+        T[]
+    end
+    mins = zero(MVector{N,T})
+    maxs = zero(MVector{N,T})
+
+    ParticlePositions(grid, mins, maxs)
 end
 
 Base.eltype(g::AbstractGrid{N,T}) where {N,T} = eltype(g.grid)
