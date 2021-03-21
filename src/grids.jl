@@ -16,8 +16,8 @@ struct ParticlePositions{N,T,V<:AbstractVector{T}} <: AbstractGrid{N,T}
 end
 
 function ParticlePositions(grid)
-    mins = broadcast_grid(minimum, grid)
-    maxs = broadcast_grid(maximum, grid)
+    mins = MVector(broadcast_grid(minimum, grid))
+    maxs = MVector(broadcast_grid(maximum, grid))
 
     ParticlePositions(grid, mins, maxs)
 end
