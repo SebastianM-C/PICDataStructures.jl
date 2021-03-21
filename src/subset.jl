@@ -60,8 +60,7 @@ function slice(::LatticeGrid, f, dir, idx::Int)
     dim = dir_to_idx(dir)
     grid = getdomain(f)
     @debug "Slice along $dir ($dim) at: $(grid[dim][idx]) (idx $idx)"
-    data = selectdim(f.data, dim, idx)
-    grid_slice = filter(d->d ≠ grid[dim], grid.grid)
+    data = selectdim(unwrapdata(f), dim, idx)
 
     parameterless_type(f)(data, parameterless_type(grid)(grid_slice))
 end

@@ -55,17 +55,17 @@ end
 
 # Indexing
 Base.@propagate_inbounds function Base.getindex(f::VectorField{N}, i::Int) where N
-    SVector{N}(getfield(f, :data)[i]...)
+    SVector{N}(unwrapdata(f)[i]...)
 end
 Base.@propagate_inbounds function Base.setindex!(f::VectorField, v::SVector, i::Int)
     # @debug typeof(f.data)
-    getfield(f, :data)[i] = vector2nt(f, v)
+    unwrapdata(f)[i] = vector2nt(f, v)
 end
 Base.@propagate_inbounds function Base.getindex(f::VectorVariable{N}, i::Int) where N
-    SVector{N}(getfield(f, :data)[i]...)
+    SVector{N}(unwrapdata(f)[i]...)
 end
 Base.@propagate_inbounds function Base.setindex!(f::VectorVariable, v::SVector, i::Int)
-    getfield(f, :data)[i] = vector2nt(f, v)
+    unwrapdata(f)[i] = vector2nt(f, v)
 end
 
 Base.eltype(::VectorField{N,M,T}) where {N,M,T} = SVector{N,recursive_bottom_eltype(T)}
@@ -73,21 +73,21 @@ Base.eltype(::VectorVariable{N,M,T}) where {N,M,T} = SVector{N,recursive_bottom_
 
 function Base.similar(f::VectorField, ::Type{S}, dims::Dims) where S
     # @debug "Building similar vector field of type $S"
-    parameterless_type(f)(StructArray(similar(getfield(f, :data), S, dims)), getdomain(f))
+    parameterless_type(f)(StructArray(similar(unwrapdata(f), S, dims)), getdomain(f))
 end
 
 function Base.similar(f::VectorVariable, ::Type{S}, dims::Dims) where S
     # @debug "Building similar vector variable of type $S"
-    parameterless_type(f)(StructArray(similar(getfield(f, :data), S, dims)), getdomain(f))
+    parameterless_type(f)(StructArray(similar(unwrapdata(f), S, dims)), getdomain(f))
 end
 
 # Acessing the internal data storage by column names
-get_property(f, key) = getproperty(getfield(f, :data), key)
+get_property(f, key) = getproperty(unwrapdata(f), key)
 
 Base.getproperty(f::VectorField, key::Symbol) = get_property(f, key)
 Base.getproperty(f::VectorVariable, key::Symbol) = get_property(f, key)
-Base.propertynames(f::VectorField) = propertynames(getfield(f, :data))
-Base.propertynames(f::VectorVariable) = propertynames(getfield(f, :data))
+Base.propertynames(f::VectorField) = propertynames(unwrapdata(f))
+Base.propertynames(f::VectorVariable) = propertynames(unwrapdata(f))
 
 vector_from(::Type{<:ScalarField}) = VectorField
 vector_from(::Type{<:ScalarVariable}) = VectorVariable

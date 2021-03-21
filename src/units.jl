@@ -1,5 +1,5 @@
 function Unitful.ustrip(f::AbstractPICDataStructure)
-    data = getfield(f, :data)
+    data = unwrapdata(f)
     grid = getdomain(f)
     @debug "Stripping units for data of type $(typeof(data)) and grid $(typeof(grid))"
     udata = ustrip_data(data)
@@ -42,15 +42,15 @@ for f in (:uconvert, :ustrip)
             ParticlePositions(ug, min, max)
         end
         function (Unitful.$f)(u_data::Units, f::AbstractPICDataStructure)
-            data = map(d->($f)(u_data, d), getfield(f, :data))
+            data = map(d->($f)(u_data, d), unwrapdata(f))
             grid = getdomain(f)
 
             parameterless_type(f)(data, grid)
         end
 
         function (Unitful.$f)(u_data::Units, u_grid::Units, f::AbstractPICDataStructure)
-            data = map(d->($f)(u_data, d), getfield(f, :data))
-            grid = ustrip(u_grid, getdomain(f))
+            data = map(d->($f)(u_data, d), unwrapdata(f))
+            grid = $f(u_grid, getdomain(f))
 
             parameterless_type(f)(data, grid)
         end
