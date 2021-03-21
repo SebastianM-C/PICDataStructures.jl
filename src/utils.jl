@@ -11,6 +11,21 @@ end
 Base.minimum(g::ParticlePositions) = g.minvals
 Base.maximum(g::ParticlePositions) = g.maxvals
 
+Base.sort(g::ParticlePositions, dim) = ParticlePositions(sort(g[dim]), g.minvals, g.maxvals)
+
+function Base.sort!(f::T, dim) where T <: AbstractPICDataStructure
+    sort!(domain_discretization(T), f, dim)
+end
+
+function Base.sort!(::ParticleGrid, f, dim)
+    grid = getdomain(f)
+    sort_idx = sortperm(grid[dim])
+    permute!.(grid, (sort_idx,))
+    permute!(unwrapdata(f), sort_idx)
+
+    return f
+end
+
 getdomain(f::AbstractPICDataStructure) = getfield(f, :grid)
 unwrapdata(f::AbstractPICDataStructure) = getfield(f, :data)
 
@@ -25,3 +40,5 @@ function broadcast_grid(f, arg, g::NTuple{N}) where N
         f.(arg, g[i])
     end
 end
+
+dimensionality(::AbstractGrid{N}) where N = N
