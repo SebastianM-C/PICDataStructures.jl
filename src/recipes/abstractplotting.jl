@@ -45,7 +45,7 @@ function AbstractPlotting.plot!(sc::ScatterVariable{<:Tuple{ScalarVariable{N,T}}
 
     update_plot(grid[], color[])
 
-    plt = scatter!(sc, scattergrid, color=scattercolor, markersize=sc.size)
+    plt = scatter!(sc, scattergrid, color=:red, markersize=sc.size)
 
     return sc
 end

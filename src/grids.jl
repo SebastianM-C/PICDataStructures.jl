@@ -39,6 +39,13 @@ Base.iterate(g::AbstractGrid, state...) = iterate(g.grid, state...)
 
 Base.@propagate_inbounds Base.getindex(g::AbstractGrid, i) = getfield(g, :grid)[i]
 
+Base.@propagate_inbounds function Base.getindex(grid::ParticlePositions{N}, idxs::Vector{Int}) where N
+    g = ntuple(N) do i
+        grid[i][idxs]
+    end
+    ParticlePositions(g)
+end
+
 function Base.empty!(grid::ParticlePositions{N,T}) where {N,T}
     for grid_dir in grid
         empty!(grid_dir)
@@ -47,6 +54,10 @@ function Base.empty!(grid::ParticlePositions{N,T}) where {N,T}
     grid.maxvals .= 0
 
     return grid
+end
+
+function Base.empty(::ParticlePositions{N,T}) where {N,T}
+    ParticlePositions((T[],), zero(MVector{N}), zero(MVector{N}))
 end
 
 function Base.append!(grid::ParticlePositions, new_grid::ParticlePositions)
