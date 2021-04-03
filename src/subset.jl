@@ -36,27 +36,16 @@ end
 
 dir_to_idx(i::Int) = i
 
-function Base.dropdims(grid::AbstractAxisGrid, dim)
-    g = filter(d->d ≠ grid[dim], grid.grid)
-    parameterless_type(grid)(g)
-end
-
-function Base.dropdims(grid::ParticlePositions{N}, dim, idxs) where N
+function Base.dropdims(grid::AbstractGrid{N}, dim) where N
     selected_dims = filter(i->i≠dim, Base.OneTo(N))
+
     g = ntuple(N-1) do i
-        grid[selected_dims[i]][idxs]
+        grid[selected_dims[i]]
     end
     if(any(isempty.(g)))
-        return ParticlePositions((Nothing[],), (nothing,), (nothing,))
+        empty(grid)
     end
-    mins = ntuple(N-1) do i
-        minimum(g[i])
-    end
-    maxs = ntuple(N-1) do i
-        maximum(g[i])
-    end
-
-    ParticlePositions(g, MVector(mins), MVector(maxs))
+    parameterless_type(grid)(g)
 end
 
 slice(f::T, args...) where T <: AbstractPICDataStructure = slice(domain_discretization(T), f, args...)
@@ -68,7 +57,7 @@ function slice(::ParticleGrid, f, dir, slice_location, ϵ)
 
     @debug "Slice at $slice_location gives $(length(idxs)) points"
     data = view(unwrapdata(f), idxs)
-    grid_slice = dropdims(grid, dim, idxs)
+    grid_slice = dropdims(grid[idxs], dim)
 
     parameterless_type(f)(data, grid_slice)
 end
@@ -80,7 +69,7 @@ function slice(::ParticleGrid, f, dir, idx::Int, ϵ)
 
     @debug "Slice at index $idx gives $(length(idxs)) points"
     data = view(unwrapdata(f), idxs)
-    grid_slice = dropdims(grid, dim, idxs)
+    grid_slice = dropdims(grid[idxs], dim)
 
     parameterless_type(f)(data, grid_slice)
 end
