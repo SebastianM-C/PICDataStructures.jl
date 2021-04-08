@@ -17,3 +17,7 @@ RecipesBase.@recipe function f(var::ScalarVariable{N}) where N
         end
     end
 end
+
+RecipesBase.@recipe function f(::Type{T}, f::T) where T <: ScalarField
+    unwrapdata(f)
+end
