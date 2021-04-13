@@ -8,6 +8,14 @@ struct VectorVariable{N,M,T,D<:AbstractArray{T,M},G} <: AbstractPICDataStructure
     grid::G
 end
 
+struct VectorQuantity end
+struct ParticleGrid end
+
+scalarness(::Type{<:VectorField}) = VectorQuantity()
+scalarness(::Type{<:VectorVariable}) = VectorQuantity()
+
+abstract type AbstractVectorQuantity{T,N} <: AbstractArray{T,N} end
+
 function VectorField{N}(data::D, grid::G) where {N, M, T, D <: AbstractArray{T,M}, G}
     VectorField{N, M, T, D, G}(data, grid)
 end
@@ -42,15 +50,34 @@ function vector2nt(data::StructArray, ::Type{<:SArray{Tuple{N},T}}) where {N,T}
     return NamedTuple{names, NTuple{N,T}}
 end
 
-function vector2nt(::StructArray, eltype::Type{<:Number})
-    msg = "Cannot create vector with eltype $eltype. Are you trying to create a scalar?"
-    throw(ArgumentError(msg))
-end
+Base.BroadcastStyle(::VectorQuantity, ::Type{<:AbstractPICDataStructure}) = Broadcast.ArrayStyle{AbstractVectorQuantity}()
 
 function similar_data(data::StructArray{T}, ElType, dims) where T
     # @debug typeof(data) ElType
     S = vector2nt(data, ElType)
     StructArray{S}(map(typ -> similar(typ, dims), fieldarrays(data)))
+end
+
+function Base.similar(bc::Broadcast.Broadcasted{Broadcast.ArrayStyle{AbstractVectorQuantity}}, ::Type{ElType}) where ElType
+    # Scan the inputs for the AbstractPICDataStructure:
+    f = find_field(bc)
+    @debug "Building datastructure similar to $(typeof(f)) with eltype $ElType"
+    grid = getdomain(f)
+    # Keep the same grid for the output
+    data_type = similar_data(unwrapdata(f), ElType, axes(bc))
+    # @debug "Data type: $(typeof(data_type))"
+    parameterless_type(f)(data_type, grid)
+end
+
+function Base.similar(bc::Broadcast.Broadcasted{Broadcast.ArrayStyle{AbstractVectorQuantity}}, ::Type{ElType}) where ElType <: Number
+    # Scan the inputs for the AbstractPICDataStructure:
+    f = find_field(bc)
+    @debug "Building datastructure similar to $(typeof(f)) with eltype $ElType"
+    grid = getdomain(f)
+    # Keep the same grid for the output
+    data_type = similar(unwrapdata(f), ElType, axes(bc))
+    # @debug "Data type: $(typeof(data_type))"
+    scalar_from(typeof(f))(data_type, grid)
 end
 
 # Indexing
