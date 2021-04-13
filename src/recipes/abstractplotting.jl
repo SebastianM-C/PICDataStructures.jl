@@ -1,17 +1,17 @@
 function AbstractPlotting.convert_arguments(P::Type{<:Volume}, f::ScalarField)
-    grid = getdomain(f).grid
+    grid = getdomain(f)
     data = unwrapdata(f)
     convert_arguments(P, grid..., data)
 end
 
 function AbstractPlotting.convert_arguments(P::Type{<:Contour}, f::ScalarField)
-    grid = getdomain(f).grid
+    grid = getdomain(f)
     data = unwrapdata(f)
     convert_arguments(P, grid..., data)
 end
 
-function AbstractPlotting.convert_arguments(P::Type{<:Scatter}, g::ParticlePositions)
-    convert_arguments(P, g.grid...)
+function AbstractPlotting.convert_arguments(P::Type{<:PointBased}, g::ParticlePositions)
+    convert_arguments(P, g...)
 end
 
 @recipe(ScatterVariable) do scene
@@ -48,4 +48,10 @@ function AbstractPlotting.plot!(sc::ScatterVariable{<:Tuple{ScalarVariable{N,T}}
     plt = scatter!(sc, scattergrid, color=:red, markersize=sc.size)
 
     return sc
+end
+
+function AbstractPlotting.convert_arguments(P::Type{<:Arrows}, f::VectorField)
+    grid = getdomain(f)
+    data = unwrapdata(f)
+    convert_arguments(P, grid..., components(data)...)
 end
