@@ -9,7 +9,7 @@ function Unitful.ustrip(f::AbstractPICDataStructure)
 end
 
 ustrip_data(data) = ustrip.(data)
-ustrip_data(data::StructArray) = StructArray(map(ustrip, fieldarrays(data)))
+ustrip_data(data::StructArray) = StructArray(map(ustrip, components(data)))
 
 function Unitful.ustrip(g::AbstractAxisGrid)
     AxisGrid(broadcast_grid(ustrip, g.grid))
