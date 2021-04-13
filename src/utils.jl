@@ -29,6 +29,18 @@ end
 getdomain(f::AbstractPICDataStructure) = getfield(f, :grid)
 unwrapdata(f::AbstractPICDataStructure) = getfield(f, :data)
 
+Base.dropdims(f::T; dims) where T <: AbstractPICDataStructure = dropdims(scalarness(T), f; dims)
+
+function Base.dropdims(::VectorQuantity, f; dims)
+    selected_dims = filter(c->c≠dims, propertynames(f))
+    data = unwrapdata(f)
+    grid = getdomain(f)
+
+    selected_data = StructArray(component.((data,), selected_dims), names=selected_dims)
+
+    parameterless_type(f)(selected_data, grid)
+end
+
 function broadcast_grid(f, g::NTuple{N}) where N
     ntuple(N) do i
         f.(g[i])
