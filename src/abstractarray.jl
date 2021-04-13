@@ -15,24 +15,11 @@ Base.iterate(f::AbstractPICDataStructure, state...) = iterate(unwrapdata(f), sta
 Base.length(f::AbstractPICDataStructure) = length(unwrapdata(f))
 
 # Broadcasting
-Base.BroadcastStyle(::Type{<:AbstractPICDataStructure}) = Broadcast.ArrayStyle{AbstractPICDataStructure}()
-
-similar_data(data, ElType, dims) = similar(data, ElType, dims)
+Base.BroadcastStyle(::Type{T}) where T<:AbstractPICDataStructure = Base.BroadcastStyle(scalarness(T), T)
 
 function Base.similar(f::AbstractPICDataStructure, ::Type{S}, dims::Dims) where S
-    # @debug "similar AbstractPICDataStructure"
+    @debug "similar AbstractPICDataStructure"
     parameterless_type(f)(similar(unwrapdata(f), S, dims), getdomain(f))
-end
-
-function Base.similar(bc::Broadcast.Broadcasted{Broadcast.ArrayStyle{AbstractPICDataStructure}}, ::Type{ElType}) where ElType
-    # Scan the inputs for the AbstractPICDataStructure:
-    f = find_field(bc)
-    @debug "Building datastructure similar to $(typeof(f)) with eltype $ElType"
-    grid = getdomain(f)
-    # Keep the same grid for the output
-    data_type = similar_data(unwrapdata(f), ElType, axes(bc))
-    # @debug "Data type: $(typeof(data_type))"
-    parameterless_type(f)(data_type, grid)
 end
 
 """

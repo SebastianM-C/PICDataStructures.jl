@@ -3,7 +3,7 @@ module PICDataStructures
 export AbstractPICDataStructure,
     ScalarField, ScalarVariable, VectorField, VectorVariable,
     AbstractGrid, AbstractAxisGrid, AxisGrid, SparseAxisGrid, ParticlePositions,
-    build_vector, getdomain,
+    build_vector, getdomain, mapgrid, scalarfield, scalarvariable,
     downsample, slice,
     scalarness, domain_type, domain_discretization,
     ScalarQuantity, VectorQuantity, LatticeGrid, ParticleGrid
