@@ -13,13 +13,14 @@ using CoordinateTransformations
 using ImageTransformations
 using StaticArrays
 using StructArrays
-using StructArrays: components
+using StructArrays: components, component
 using RecursiveArrayTools
 using IntervalSets
 using ArrayInterface: parameterless_type
 using Unitful
 using Unitful: Units
 using AbstractPlotting
+using AbstractPlotting: PointBased
 import RecipesBase, UnitfulRecipes
 
 abstract type AbstractPICDataStructure{T,N} <: AbstractArray{T,N} end
