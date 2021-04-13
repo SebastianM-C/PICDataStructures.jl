@@ -54,7 +54,7 @@ function slice(f::T, dir, idx::Integer) where T <: AbstractPICDataStructure
     slice(scalarness(T), f, dir, idx)
 end
 
-function Base.selectdim(f::T, d, i::Integer) where T <: AbstractPICDataStructure
+function Base.selectdim(f::T, d::Union{Int,Symbol}, i::Integer) where T <: AbstractPICDataStructure
     selectdim(domain_discretization(T), f, d, i)
 end
 
