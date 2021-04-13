@@ -13,6 +13,7 @@ using CoordinateTransformations
 using ImageTransformations
 using StaticArrays
 using StructArrays
+using StructArrays: components
 using RecursiveArrayTools
 using IntervalSets
 using ArrayInterface: parameterless_type

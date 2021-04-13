@@ -39,7 +39,6 @@ end
 function vector2nt(f::AbstractPICDataStructure, v::SArray{Tuple{N},T}) where {N,T}
     # @debug "Data type $(typeof(f.data)) and $(typeof(v))"
     names = propertynames(f)
-    # @debug (; zip(names, v)...)
     NamedTuple{names, NTuple{N,T}}(v)
 end
 
@@ -55,7 +54,7 @@ Base.BroadcastStyle(::VectorQuantity, ::Type{<:AbstractPICDataStructure}) = Broa
 function similar_data(data::StructArray{T}, ElType, dims) where T
     # @debug typeof(data) ElType
     S = vector2nt(data, ElType)
-    StructArray{S}(map(typ -> similar(typ, dims), fieldarrays(data)))
+    StructArray{S}(map(typ -> similar(typ, dims), components(data)))
 end
 
 function Base.similar(bc::Broadcast.Broadcasted{Broadcast.ArrayStyle{AbstractVectorQuantity}}, ::Type{ElType}) where ElType
