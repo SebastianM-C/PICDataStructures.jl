@@ -42,3 +42,18 @@ function broadcast_grid(f, arg, g::NTuple{N}) where N
 end
 
 dimensionality(::AbstractGrid{N}) where N = N
+dimensionality(::AbstractPICDataStructure{T,N}) where {T,N} = N
+
+function mapgrid(f, grid::AbstractGrid{N}) where N
+    map(f, Iterators.product(grid...))
+end
+
+function scalarfield(f, grid)
+    data = mapgrid(f, grid)
+    ScalarField(data, grid)
+end
+
+function scalarvariable(f, grid)
+    data = mapgrid(f, grid)
+    ScalarVariable(data, grid)
+end
