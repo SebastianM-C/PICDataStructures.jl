@@ -12,3 +12,5 @@
 - `scalarfield(f, grid)` creates a scalar field on the `grid` with the values given by `f`
 - `slice` for vector fields
 - `selectdims` now is specialized on `AbstractPICDataStructure`s and returns a `AbstractPICDataStructure`
+- `hasunits` indicates whether the input has units
+- `AbstractPICDataStructure` now has a grid type parameter

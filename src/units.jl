@@ -56,3 +56,5 @@ for f in (:uconvert, :ustrip)
         end
     end
 end
+
+hasunits(f) = unit(recursive_bottom_eltype(f)) ≠ NoUnits
