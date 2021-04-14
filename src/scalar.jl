@@ -1,9 +1,9 @@
-struct ScalarField{N,T,D<:AbstractArray{T,N},G} <: AbstractPICDataStructure{T,N}
+struct ScalarField{N,T,D<:AbstractArray{T,N},G} <: AbstractPICDataStructure{T,N,G}
     data::D
     grid::G
 end
 
-struct ScalarVariable{N,T,D<:AbstractArray{T,N},G} <: AbstractPICDataStructure{T,N}
+struct ScalarVariable{N,T,D<:AbstractArray{T,N},G} <: AbstractPICDataStructure{T,N,G}
     data::D
     grid::G
 end

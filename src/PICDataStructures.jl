@@ -23,7 +23,7 @@ using AbstractPlotting
 using AbstractPlotting: PointBased
 import RecipesBase, UnitfulRecipes
 
-abstract type AbstractPICDataStructure{T,N} <: AbstractArray{T,N} end
+abstract type AbstractPICDataStructure{T,N,G} <: AbstractArray{T,N} end
 
 include("abstractarray.jl")
 include("grids.jl")
