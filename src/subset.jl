@@ -26,7 +26,7 @@ function ImageTransformations.imresize(g::ParticlePositions, target_size)
     ParticlePositions(rg, g.minvals, g.maxvals)
 end
 
-function downsample(f::AbstractPICDataStructure, target_size...)
+function downsample(f, target_size...)
     all(size(f) .> target_size) ? imresize(f, target_size...) : f
 end
 
