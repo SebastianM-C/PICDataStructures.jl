@@ -37,6 +37,9 @@ Base.eltype(g::AbstractGrid{N,T}) where {N,T} = eltype(g.grid)
 Base.length(g::AbstractGrid) = length(g.grid)
 Base.iterate(g::AbstractGrid, state...) = iterate(g.grid, state...)
 
+# This makes size(field) == size(grid)
+Base.size(g::AbstractGrid) = (length.(g.grid)...,)
+
 Base.@propagate_inbounds Base.getindex(g::AbstractGrid, i) = getfield(g, :grid)[i]
 
 Base.@propagate_inbounds function Base.getindex(grid::ParticlePositions{N}, idxs::Vector{Int}) where N
