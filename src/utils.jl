@@ -53,12 +53,37 @@ function broadcast_grid(f, arg, g::NTuple{N}) where N
     end
 end
 
+function unwrap(f)
+    _f = hasunits(f) ? ustrip(f) : f
+
+    grid = getdomain(_f)
+    data = unwrapdata(_f)
+
+    return grid, data
+end
+
+function unwrap(f::Observable)
+    _f = @lift hasunits($f) ? ustrip($f) : $f
+
+    N = dimensionality(_f[])
+    grid = ntuple(N) do i
+        lift(_f) do val_f
+            getdomain(val_f)[i]
+        end
+    end
+    data = @lift Float32.(unwrapdata($_f))
+
+    return grid, data
+end
+
 dimensionality(::AbstractGrid{N}) where N = N
 dimensionality(::AbstractPICDataStructure{T,N}) where {T,N} = N
 
 function mapgrid(f, grid::AbstractGrid{N}) where N
     map(f, Iterators.product(grid...))
 end
+
+mapgrid(f, field::AbstractPICDataStructure) = mapgrid(f, getdomain(field))
 
 function scalarfield(f, grid)
     data = mapgrid(f, grid)

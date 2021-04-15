@@ -3,7 +3,7 @@ module PICDataStructures
 export AbstractPICDataStructure,
     ScalarField, ScalarVariable, VectorField, VectorVariable,
     AbstractGrid, AbstractAxisGrid, AxisGrid, SparseAxisGrid, ParticlePositions,
-    build_vector, getdomain, mapgrid, scalarfield, scalarvariable,
+    build_vector, getdomain, mapgrid, scalarfield, scalarvariable, hasunits,
     downsample, slice,
     scalarness, domain_type, domain_discretization,
     ScalarQuantity, VectorQuantity, LatticeGrid, ParticleGrid
@@ -20,7 +20,7 @@ using ArrayInterface: parameterless_type
 using Unitful
 using Unitful: Units
 using AbstractPlotting
-using AbstractPlotting: PointBased
+using AbstractPlotting: PointBased, SurfaceLike, VolumeLike
 import RecipesBase, UnitfulRecipes
 
 abstract type AbstractPICDataStructure{T,N,G} <: AbstractArray{T,N} end
