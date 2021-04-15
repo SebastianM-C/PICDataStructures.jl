@@ -57,4 +57,6 @@ for f in (:uconvert, :ustrip)
     end
 end
 
-hasunits(f) = unit(recursive_bottom_eltype(f)) ≠ NoUnits
+recursive_bottom_unit(f) = unit(recursive_bottom_eltype(f))
+hasunits(f) = recursive_bottom_unit(f) ≠ NoUnits
+unitname(f) = hasunits(f) ? string(recursive_bottom_unit(f)) : ""
