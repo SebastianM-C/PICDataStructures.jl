@@ -8,17 +8,21 @@ export AbstractPICDataStructure,
     scalarness, domain_type, domain_discretization,
     ScalarQuantity, VectorQuantity, LatticeGrid, ParticleGrid
 
+# Arrays
+using StaticArrays
+using StructArrays
+using RecursiveArrayTools
+using ArrayInterface: parameterless_type
+using StructArrays: components, component, similar_structarray
+# Math
 using LinearAlgebra
 using CoordinateTransformations
 using ImageTransformations
-using StaticArrays
-using StructArrays
-using StructArrays: components, component
-using RecursiveArrayTools
 using IntervalSets
-using ArrayInterface: parameterless_type
+# Units
 using Unitful
 using Unitful: Units
+# Plotting
 using AbstractPlotting
 using AbstractPlotting: PointBased, SurfaceLike, VolumeLike
 import RecipesBase, UnitfulRecipes
