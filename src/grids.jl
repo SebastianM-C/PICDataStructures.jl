@@ -40,9 +40,9 @@ Base.iterate(g::AbstractGrid, state...) = iterate(g.grid, state...)
 # This makes size(field) == size(grid)
 Base.size(g::AbstractGrid) = (length.(g.grid)...,)
 
-Base.@propagate_inbounds Base.getindex(g::AbstractGrid, i) = getfield(g, :grid)[i]
+@propagate_inbounds Base.getindex(g::AbstractGrid, i) = getfield(g, :grid)[i]
 
-Base.@propagate_inbounds function Base.getindex(grid::ParticlePositions{N}, idxs::Vector{Int}) where N
+@propagate_inbounds function Base.getindex(grid::ParticlePositions{N}, idxs::Vector{Int}) where N
     g = ntuple(N) do i
         grid[i][idxs]
     end

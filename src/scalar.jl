@@ -24,7 +24,7 @@ function Base.similar(bc::Broadcast.Broadcasted{Broadcast.ArrayStyle{AbstractSca
     @debug "Building datastructure similar to $(typeof(f)) with eltype $ElType"
     grid = getdomain(f)
     # Keep the same grid for the output
-    data_type = similar(unwrapdata(f), ElType, axes(bc))
-    # @debug "Data type: $(typeof(data_type))"
-    parameterless_type(f)(data_type, grid)
+    data = similar(unwrapdata(f), ElType, axes(bc))
+    @debug "Output data type: $(typeof(data))"
+    parameterless_type(f)(data, grid)
 end

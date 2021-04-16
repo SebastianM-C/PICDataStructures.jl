@@ -14,6 +14,8 @@ using StructArrays
 using RecursiveArrayTools
 using ArrayInterface: parameterless_type
 using StructArrays: components, component, similar_structarray
+using Base.Broadcast: Broadcasted, ArrayStyle
+using Base: @propagate_inbounds
 # Math
 using LinearAlgebra
 using CoordinateTransformations

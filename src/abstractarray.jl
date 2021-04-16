@@ -1,6 +1,6 @@
 # Indexing
-Base.@propagate_inbounds Base.getindex(f::AbstractPICDataStructure, i::Int) = unwrapdata(f)[i]
-Base.@propagate_inbounds Base.setindex!(f::AbstractPICDataStructure, v, i::Int) = unwrapdata(f)[i] = v
+@propagate_inbounds Base.getindex(f::AbstractPICDataStructure, i::Int) = unwrapdata(f)[i]
+@propagate_inbounds Base.setindex!(f::AbstractPICDataStructure, v, i::Int) = unwrapdata(f)[i] = v
 
 Base.firstindex(f::AbstractPICDataStructure) = firstindex(unwrapdata(f))
 Base.lastindex(f::AbstractPICDataStructure) = lastindex(unwrapdata(f))

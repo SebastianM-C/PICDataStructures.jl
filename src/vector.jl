@@ -52,23 +52,26 @@ end
 Base.BroadcastStyle(::VectorQuantity, ::Type{<:AbstractPICDataStructure}) = Broadcast.ArrayStyle{AbstractVectorQuantity}()
 
 function similar_data(data::StructArray{T}, ElType, dims) where T
-    # @debug typeof(data) ElType
+    @debug "Building similar StructArray with type $(typeof(data)) end eltype $ElType"
     S = vector2nt(data, ElType)
-    StructArray{S}(map(typ -> similar(typ, dims), components(data)))
+    eltypes = NTuple{length(dims), eltype(ElType)}
+    @debug "Element eltypes: $eltypes"
+    output_eltype = NamedTuple{propertynames(data), eltypes}
+    similar(similar_structarray(data, output_eltype), dims)
 end
 
-function Base.similar(bc::Broadcast.Broadcasted{Broadcast.ArrayStyle{AbstractVectorQuantity}}, ::Type{ElType}) where ElType
+function Base.similar(bc::Broadcasted{ArrayStyle{AbstractVectorQuantity}}, ::Type{ElType}) where ElType
     # Scan the inputs for the AbstractPICDataStructure:
     f = find_field(bc)
     @debug "Building datastructure similar to $(typeof(f)) with eltype $ElType"
     grid = getdomain(f)
     # Keep the same grid for the output
-    data_type = similar_data(unwrapdata(f), ElType, axes(bc))
-    # @debug "Data type: $(typeof(data_type))"
-    parameterless_type(f)(data_type, grid)
+    data = similar_data(unwrapdata(f), ElType, axes(bc))
+    @debug "Output data type: $(typeof(data))"
+    parameterless_type(f)(data, grid)
 end
 
-function Base.similar(bc::Broadcast.Broadcasted{Broadcast.ArrayStyle{AbstractVectorQuantity}}, ::Type{ElType}) where ElType <: Number
+function Base.similar(bc::Broadcasted{ArrayStyle{AbstractVectorQuantity}}, ::Type{ElType}) where ElType <: Number
     # Scan the inputs for the AbstractPICDataStructure:
     f = find_field(bc)
     @debug "Building datastructure similar to $(typeof(f)) with eltype $ElType"
@@ -80,17 +83,17 @@ function Base.similar(bc::Broadcast.Broadcasted{Broadcast.ArrayStyle{AbstractVec
 end
 
 # Indexing
-Base.@propagate_inbounds function Base.getindex(f::VectorField{N}, i::Int) where N
+@propagate_inbounds function Base.getindex(f::VectorField{N}, i::Int) where N
     SVector{N}(unwrapdata(f)[i]...)
 end
-Base.@propagate_inbounds function Base.setindex!(f::VectorField, v::SVector, i::Int)
+@propagate_inbounds function Base.setindex!(f::VectorField, v::SVector, i::Int)
     # @debug typeof(f.data)
     unwrapdata(f)[i] = vector2nt(f, v)
 end
-Base.@propagate_inbounds function Base.getindex(f::VectorVariable{N}, i::Int) where N
+@propagate_inbounds function Base.getindex(f::VectorVariable{N}, i::Int) where N
     SVector{N}(unwrapdata(f)[i]...)
 end
-Base.@propagate_inbounds function Base.setindex!(f::VectorVariable, v::SVector, i::Int)
+@propagate_inbounds function Base.setindex!(f::VectorVariable, v::SVector, i::Int)
     unwrapdata(f)[i] = vector2nt(f, v)
 end
 
