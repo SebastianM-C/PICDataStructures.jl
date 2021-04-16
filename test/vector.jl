@@ -31,9 +31,9 @@ using Unitful
     end
 
     @testset "LinearAlgebra" begin
-        nvf = norm(vf)
+        nvf = norm.(vf)
         @test scalarness(typeof(nvf)) === ScalarQuantity()
-        @test norm(vf[2]) == nvf[2]
+        @test norm.(vf)[2] == nvf[2]
 
         @test all(iszero.(vf × vf))
     end
@@ -77,9 +77,9 @@ end
         end
 
         @testset "LinearAlgebra" begin
-            nvf = norm(v)
+            nvf = norm.(v)
             @test scalarness(typeof(nvf)) === ScalarQuantity()
-            @test norm(v[2]) == nvf[2]
+            @test norm.(v)[2] == nvf[2]
         end
     end
 

@@ -1,5 +1,7 @@
 using PICDataStructures, Test
+using PICDataStructures: unitname, dimensionality
 using Unitful
+using RecursiveArrayTools: recursive_bottom_eltype
 
 @testset "Scalar field interface" begin
     grids = SparseAxisGrid.([
@@ -10,28 +12,29 @@ using Unitful
         (0:0.01:1, 0:0.01:1).*u"m",
         (0:0.005:1, 0:0.01:1, 0:0.01:1).*u"m",
     ])
-    data_sets = [
-        sin.(first(grids[1])),
-        [sin(x)*sin(y) for (x,y) in Iterators.product(grids[2]...)],
-        [sin(x)*sin(y)*sin(z) for (x,y,z) in Iterators.product(grids[3]...)],
-        sin.(first(grids[1])).*u"V/m",
-        [sin(x)*sin(y)u"V/m" for (x,y) in Iterators.product(grids[2]...)],
-        [sin(x)*sin(y)*sin(z)u"V/m" for (x,y,z) in Iterators.product(grids[3]...)]
-    ]
-    desc = [
-        "1D",
-        "2D",
-        "3D",
-        "1D Unitful",
-        "2D Unitful",
-        "3D Unitful"
+    fields = [
+        scalarfield(grids[1]) do (x,)
+            1 / x
+        end,
+        scalarfield(grids[2]) do (x,y)
+            1 / √(x^2 + y^2)
+        end,
+        scalarfield(grids[3]) do (x,y,z)
+            1 / √(x^2 + y^2 + z^2)
+        end,
+        scalarfield(grids[4]) do (x,)
+            1u"V" / x
+        end,
+        scalarfield(grids[5]) do (x,y)
+            1u"V" / √(x^2 + y^2)
+        end,
+        scalarfield(grids[6]) do (x,y,z)
+            1u"V" / √(x^2 + y^2 + z^2)
+        end
     ]
 
-    @testset "$(desc[i])" for i in eachindex(desc)
-        data = data_sets[i]
-        grid = grids[i]
-        f = ScalarField(data, grid)
-        @test f.data == data
+    @testset "$(dimensionality(f))D ($(unitname(f)))" for (grid,f) in zip(grids,fields)
+        @test f isa ScalarField
         @test getdomain(f) == grid
 
         T = typeof(f)
@@ -45,56 +48,46 @@ using Unitful
         end
 
         @testset "Indexing" begin
-            @test size(f) == size(data)
-            @test f[begin:end] == data[begin:end]
+            @test size(f) == size(grid)
+            @test !isfinite(f[1])
+            @test f[end] == oneunit(recursive_bottom_eltype(f)) / √(dimensionality(f))
         end
         @testset "Iteration" begin
-            @test all([fd == d for (fd, d) in zip(f, data)])
+            @test [fd for fd in f] == collect(f)
         end
         @testset "Broadcasting" begin
             f2 = f .* 2
             @test typeof(f) == typeof(f2)
-            @test f2.grid == getdomain(f)
+            @test getdomain(f2) == getdomain(f)
+            @test f[1] == 2*f2[1]
         end
 
         @testset "Downsampling" begin
-            if startswith(desc[i], "3D")
+            if dimensionality(f) == 3
                 f_small = downsample(f, 150, 50, 50)
-            elseif startswith(desc[i], "2D")
-                f_small = downsample(f, 50, 50)
-            else
-                f_small = downsample(f, 5)
-            end
-            if startswith(desc[i], "3D")
                 @test size(f_small) == (150, 50, 50)
-            elseif startswith(desc[i], "2D")
+            elseif dimensionality(f) == 2
+                f_small = downsample(f, 50, 50)
                 @test size(f_small) == (50, 50)
             else
+                f_small = downsample(f, 5)
                 @test size(f_small) == (5,)
             end
         end
     end
     @testset "Sclicing" begin
-        data = data_sets[3]
-        grid = grids[3]
-
-        f = ScalarField(data, grid)
+        f = fields[3]
 
         fs = slice(f, 1, 5)
         fs1 = slice(f, 1, 0.5)
         @test f[5, :, :] == fs
+        @test dimensionality(fs) == 2
     end
 
     @testset "Unit handling" begin
-        data = data_sets[3]
-        grid = grids[3]
-        data_u = data_sets[6]
-        grid_u = grids[6]
-
-        f = ScalarField(data, grid)
-        f_u = ScalarField(data_u, grid_u)
-
-        @test ustrip(f_u) == f
+        @test ustrip(fields[4]) == fields[1]
+        @test ustrip(fields[5]) == fields[2]
+        @test ustrip(fields[6]) == fields[3]
     end
 end
 

@@ -79,7 +79,7 @@ end
 dimensionality(::AbstractGrid{N}) where N = N
 dimensionality(::AbstractPICDataStructure{T,N}) where {T,N} = N
 
-function mapgrid(f, grid::AbstractGrid{N}) where N
+function mapgrid(f, grid::AbstractGrid)
     map(f, Iterators.product(grid...))
 end
 
