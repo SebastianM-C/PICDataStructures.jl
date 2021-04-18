@@ -81,8 +81,12 @@ dimensionality(::Type{<:AbstractGrid{N}}) where N = N
 dimensionality(::AbstractPICDataStructure{T,N,G}) where {T,N,G} = dimensionality(G)
 dimensionality(::Type{<:AbstractPICDataStructure{T,N,G}}) where {T,N,G} = dimensionality(G)
 
-function mapgrid(f, grid::AbstractGrid)
+function mapgrid(f, grid::AbstractAxisGrid)
     map(f, Iterators.product(grid...))
+end
+
+function mapgrid(f, grid::ParticlePositions)
+    map(f, zip(grid...))
 end
 
 mapgrid(f, field::AbstractPICDataStructure) = mapgrid(f, getdomain(field))

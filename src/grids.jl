@@ -38,7 +38,8 @@ Base.length(g::AbstractGrid) = length(g.grid)
 Base.iterate(g::AbstractGrid, state...) = iterate(g.grid, state...)
 
 # This makes size(field) == size(grid)
-Base.size(g::AbstractGrid) = (length.(g.grid)...,)
+Base.size(g::AbstractAxisGrid) = (length.(g.grid)...,)
+Base.size(g::ParticlePositions) = (length(first(g)), )
 
 @propagate_inbounds Base.getindex(g::AbstractGrid, i) = getfield(g, :grid)[i]
 
