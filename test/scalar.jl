@@ -1,5 +1,5 @@
 using PICDataStructures, Test
-using PICDataStructures: unitname, dimensionality
+using PICDataStructures: dimensionality, unitname
 using Unitful
 using RecursiveArrayTools: recursive_bottom_eltype
 
@@ -13,9 +13,7 @@ using RecursiveArrayTools: recursive_bottom_eltype
         (0:0.005:1, 0:0.01:1, 0:0.01:1).*u"m",
     ])
     fields = [
-        scalarfield(grids[1]) do (x,)
-            1 / x
-        end,
+        scalarfield(x->inv(x...), grids[1]),
         scalarfield(grids[2]) do (x,y)
             1 / √(x^2 + y^2)
         end,
@@ -38,7 +36,7 @@ using RecursiveArrayTools: recursive_bottom_eltype
         @test getdomain(f) == grid
 
         T = typeof(f)
-        N = length(grid)
+        N = dimensionality(f)
         @test isconcretetype(T)
 
         @testset "Traits" begin
@@ -50,7 +48,7 @@ using RecursiveArrayTools: recursive_bottom_eltype
         @testset "Indexing" begin
             @test size(f) == size(grid)
             @test !isfinite(f[1])
-            @test f[end] == oneunit(recursive_bottom_eltype(f)) / √(dimensionality(f))
+            @test f[end] == oneunit(recursive_bottom_eltype(f)) / √N
         end
         @testset "Iteration" begin
             @test [fd for fd in f] == collect(f)
@@ -63,10 +61,10 @@ using RecursiveArrayTools: recursive_bottom_eltype
         end
 
         @testset "Downsampling" begin
-            if dimensionality(f) == 3
+            if N == 3
                 f_small = downsample(f, 150, 50, 50)
                 @test size(f_small) == (150, 50, 50)
-            elseif dimensionality(f) == 2
+            elseif N == 2
                 f_small = downsample(f, 50, 50)
                 @test size(f_small) == (50, 50)
             else
@@ -74,41 +72,46 @@ using RecursiveArrayTools: recursive_bottom_eltype
                 @test size(f_small) == (5,)
             end
         end
-    end
-    @testset "Sclicing" begin
-        f = fields[3]
 
-        fs = slice(f, 1, 5)
-        fs1 = slice(f, 1, 0.5)
-        @test f[5, :, :] == fs
-        @test dimensionality(fs) == 2
+        @testset "Sclicing" begin
+            if N > 1
+                f_slice = slice(f, :x, zero(recursive_bottom_eltype(grid)))
+                @test dimensionality(f_slice) == dimensionality(f) - 1
+            end
+        end
     end
 
     @testset "Unit handling" begin
         @test ustrip(fields[4]) == fields[1]
         @test ustrip(fields[5]) == fields[2]
         @test ustrip(fields[6]) == fields[3]
+
+        @test fields[1] .* u"V/m" == fields[4]
+        @test fields[2] .* u"V/m" == fields[5]
+        @test fields[3] .* u"V/m" == fields[6]
     end
 end
 
 @testset "Scalar variable interface" begin
-    grid = ParticlePositions((collect(0:0.1:1),))
-    data_sets = [
-        sin.(first(grid)),
-        sin.(first(grid)).*u"V/m",
+    grids = [
+        ParticlePositions((collect(0:0.1:1),collect(0:0.1:1))),
+        ParticlePositions((collect(0:0.1:1).*u"m",collect(0:0.1:1).*u"m"))
     ]
-    desc = [
-        "unitless",
-        "Unitful",
+    vars = [
+        scalarvariable(grids[1]) do (x,y)
+            x^2 + y^2
+        end,
+        scalarvariable(grids[2]) do (x,y)
+            (x^2 + y^2)
+        end,
     ]
 
-    @testset "$(desc[i])" for i in eachindex(desc)
-        data = data_sets[i]
-        f = ScalarVariable(data, grid)
-        @test f.data == data
-        @test getdomain(f) == grid
+    @testset "$(dimensionality(v))D ($(unitname(v)))" for (grid,v) in zip(grids,vars)
+        @test v isa ScalarVariable
+        @test getdomain(v) == grid
+        @test ndims(v) == 1
 
-        T = typeof(f)
+        T = typeof(v)
         @test isconcretetype(T)
 
         @testset "Traits" begin
@@ -118,35 +121,36 @@ end
         end
 
         @testset "Indexing" begin
-            @test size(f) == size(data)
-            @test f[begin:end] == data[begin:end]
+            @test size(v) == size(grid)
+            @test iszero(v[1])
+            @test v[1] isa Number
         end
         @testset "Iteration" begin
-            @test all([fd == d for (fd, d) in zip(f, data)])
+            @test [fd for fd in v] == collect(v)
         end
         @testset "Broadcasting" begin
-            f2 = f .* 2
-            @test typeof(f) == typeof(f2)
-            @test f2.grid == getdomain(f)
+            v2 = v .* 2
+            @test typeof(v) == typeof(v2)
+            @test v2.grid == getdomain(v)
         end
 
         @testset "Downsampling" begin
-            f_small = downsample(f, 5)
+            f_small = downsample(v, 5)
             @test size(f_small) == (5,)
         end
 
-        @testset "Sclice" begin
-            # TODO: Add tests
+        @testset "Sclicing" begin
+            t = recursive_bottom_eltype(grid)
+            f_slice = slice(v, :x, zero(t), t(1e-3))
+            @test dimensionality(f_slice) == dimensionality(v) - 1
         end
     end
 
     @testset "Unit handling" begin
-        data = data_sets[1]
-        data_u = data_sets[2]
+        v = vars[1]
+        v_u = vars[2]
 
-        f = ScalarVariable(data, grid)
-        f_u = ScalarVariable(data_u, grid)
-
-        @test ustrip(f_u) == f
+        @test all(ustrip(v_u) .≈ v)
+        @test all(v .* 1u"m^2" .≈ v_u)
     end
 end
