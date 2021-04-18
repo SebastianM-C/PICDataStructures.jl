@@ -133,5 +133,5 @@ function build_vector(components::NTuple{N, T}, names::NTuple{N, Symbol}) where 
     end
 
     vectortype = vector_from(T)
-    vectortype{N}(data, x.grid)
+    vectortype(data, x.grid)
 end
