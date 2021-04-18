@@ -1,10 +1,10 @@
 # Version v0.4
 
-## Breaking changes:
+## Breaking changes
 - `norm(f::AbstractPICDataStructure)` has been removed in favour of `norm.(f)`, as the latter is now possible and faster
 - `dropdims(grid::AbstractGrid, dim)` has been replaced withs `dropdims(grid::AbstractGrid; dims)`
 
-## New features:
+## New features
 - Refactor plot recipes. With this change the basic type recipes are based on traits
 like `SurfaceLike` or `VolumeLike` which make almost everyhing plottable
 with the default functions such as `contour`, `heatmap` or `volume`.
