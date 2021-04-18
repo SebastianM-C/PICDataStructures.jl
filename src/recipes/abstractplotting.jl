@@ -1,7 +1,9 @@
 include("typerecipes.jl")
 
 @recipe(FieldPlot) do scene
-    Attributes(;
+    Attributes(
+        lengthscale_factor = 1,
+        arrowsize_factor = 1;
         :color => nothing,
         :colormap => :jet1,
         :colorrange => AbstractPlotting.automatic,
@@ -82,29 +84,9 @@ function AbstractPlotting.plot!(sc::FieldPlot{<:Tuple{VectorField{N}}}) where N
     arrow_norm = @lift Float32.(vec(norm.(ustrip($f))))
     maxarrow = @lift maximum(norm.(ustrip($f)))
 
-    arrowsize_factor = if hasproperty(sc, :arrowsize_factor)
-        sc.arrowsize_factor
-    elseif N == 2
-        Node(5)
-    else
-        Node(6)
-    end
-    lengthscale_factor = if hasproperty(sc, :lengthscale_factor)
-        sc.lengthscale_factor
-    elseif N == 2
-        Node(4)
-    else
-        Node(7)
-    end
-    linewidth = if N == 2
-        1
-    else
-        700
-    end
-
-    arrowsize = @lift $(arrowsize_factor)*$arrow_norm
-    lengthscale = @lift $(lengthscale_factor)/$maxarrow
-    valuerange = @lift (-$maxarrow, $maxarrow)
+    arrowsize = @lift $(sc.arrowsize_factor)*$arrow_norm
+    lengthscale = @lift $(sc.lengthscale_factor)/$maxarrow
+    valuerange = @lift extrema($arrow_norm)
     replace_automatic!(sc, :colorrange) do
         valuerange
     end
