@@ -77,7 +77,9 @@ function unwrap(f::Observable)
 end
 
 dimensionality(::AbstractGrid{N}) where N = N
-dimensionality(::AbstractPICDataStructure{T,N}) where {T,N} = N
+dimensionality(::Type{<:AbstractGrid{N}}) where N = N
+dimensionality(::AbstractPICDataStructure{T,N,G}) where {T,N,G} = dimensionality(G)
+dimensionality(::Type{<:AbstractPICDataStructure{T,N,G}}) where {T,N,G} = dimensionality(G)
 
 function mapgrid(f, grid::AbstractGrid)
     map(f, Iterators.product(grid...))
