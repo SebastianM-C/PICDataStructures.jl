@@ -8,13 +8,8 @@ struct VectorVariable{N,M,T,D<:AbstractArray{T,M},G} <: AbstractPICDataStructure
     grid::G
 end
 
-struct VectorQuantity end
-struct ParticleGrid end
-
-scalarness(::Type{<:VectorField}) = VectorQuantity()
-scalarness(::Type{<:VectorVariable}) = VectorQuantity()
-
-abstract type AbstractVectorQuantity{T,N} <: AbstractArray{T,N} end
+@inline scalarness(::Type{<:VectorField}) = VectorQuantity()
+@inline scalarness(::Type{<:VectorVariable}) = VectorQuantity()
 
 function VectorField{N}(data::D, grid::G) where {N, M, T, D <: AbstractArray{T,M}, G}
     VectorField{N, M, T, D, G}(data, grid)
@@ -83,22 +78,18 @@ function Base.similar(bc::Broadcasted{ArrayStyle{AbstractVectorQuantity}}, ::Typ
 end
 
 # Indexing
-@propagate_inbounds function Base.getindex(f::VectorField{N}, i::Int) where N
-    SVector{N}(unwrapdata(f)[i]...)
+@propagate_inbounds function Base.getindex(::VectorQuantity, v::T, i) where T
+    N = dimensionality(T)
+    SVector{N}(unwrapdata(v)[i]...)
 end
-@propagate_inbounds function Base.setindex!(f::VectorField, v::SVector, i::Int)
+@propagate_inbounds function Base.setindex!(::VectorQuantity, f, v::SVector, i::Int)
     # @debug typeof(f.data)
     unwrapdata(f)[i] = vector2nt(f, v)
 end
-@propagate_inbounds function Base.getindex(f::VectorVariable{N}, i::Int) where N
-    SVector{N}(unwrapdata(f)[i]...)
-end
-@propagate_inbounds function Base.setindex!(f::VectorVariable, v::SVector, i::Int)
-    unwrapdata(f)[i] = vector2nt(f, v)
-end
 
-Base.eltype(::VectorField{N,M,T}) where {N,M,T} = SVector{N,recursive_bottom_eltype(T)}
-Base.eltype(::VectorVariable{N,M,T}) where {N,M,T} = SVector{N,recursive_bottom_eltype(T)}
+function Base.eltype(::VectorQuantity, v::Type{T}) where T
+    SVector{dimensionality(T),recursive_bottom_eltype(T)}
+end
 
 function Base.similar(f::VectorField, ::Type{S}, dims::Dims) where S
     # @debug "Building similar vector field of type $S"

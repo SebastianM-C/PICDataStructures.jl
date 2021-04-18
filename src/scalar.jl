@@ -1,3 +1,7 @@
+abstract type AbstractScalarQuantity{T,N} <: AbstractArray{T,N} end
+
+struct ScalarQuantity end
+
 struct ScalarField{N,T,D<:AbstractArray{T,N},G} <: AbstractPICDataStructure{T,N,G}
     data::D
     grid::G
@@ -8,13 +12,16 @@ struct ScalarVariable{N,T,D<:AbstractArray{T,N},G} <: AbstractPICDataStructure{T
     grid::G
 end
 
-struct ScalarQuantity end
-struct LatticeGrid{N} end
+@inline scalarness(::Type{<:ScalarField}) = ScalarQuantity()
+@inline scalarness(::Type{<:ScalarVariable}) = ScalarQuantity()
 
-scalarness(::Type{<:ScalarField}) = ScalarQuantity()
-scalarness(::Type{<:ScalarVariable}) = ScalarQuantity()
+# Indexing
+@propagate_inbounds Base.getindex(::ScalarQuantity, f, i) = unwrapdata(f)[i]
+@propagate_inbounds Base.setindex!(::ScalarQuantity, f, v, i) = unwrapdata(f)[i] = v
 
-abstract type AbstractScalarQuantity{T,N} <: AbstractArray{T,N} end
+Base.eltype(::ScalarQuantity, f::Type{<:AbstractPICDataStructure{T}}) where T = T
+
+# Broadcasting
 
 Base.BroadcastStyle(::ScalarQuantity, ::Type{<:AbstractPICDataStructure}) = Broadcast.ArrayStyle{AbstractScalarQuantity}()
 
