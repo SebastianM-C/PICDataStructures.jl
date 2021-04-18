@@ -1,3 +1,7 @@
+# Version v0.4.1
+
+## New features
+- Export `unitname`. This function gives the name of the units for the input.
 # Version v0.4
 
 ## Breaking changes
