@@ -1,21 +1,18 @@
-function AbstractPlotting.convert_arguments(P::Type{<:Volume}, f::ScalarField)
-    grid = getdomain(f).grid
-    data = unwrapdata(f)
-    convert_arguments(P, grid..., data)
-end
+include("typerecipes.jl")
 
-function AbstractPlotting.convert_arguments(P::Type{<:Contour}, f::ScalarField)
-    grid = getdomain(f).grid
-    data = unwrapdata(f)
-    convert_arguments(P, grid..., data)
-end
-
-function AbstractPlotting.convert_arguments(P::Type{<:Scatter}, g::ParticlePositions)
-    convert_arguments(P, g.grid...)
+@recipe(FieldPlot) do scene
+    Attributes(
+        lengthscale_factor = 1,
+        arrowsize_factor = 1;
+        :color => nothing,
+        :colormap => :jet1,
+        :colorrange => AbstractPlotting.automatic,
+        :levels => 6,
+    )
 end
 
 @recipe(ScatterVariable) do scene
-    Attributes(
+    Attributes(;
         :size => 1,
         # :colormap => :viridis,
     )
@@ -46,6 +43,63 @@ function AbstractPlotting.plot!(sc::ScatterVariable{<:Tuple{ScalarVariable{N,T}}
     update_plot(grid[], color[])
 
     plt = scatter!(sc, scattergrid, color=:red, markersize=sc.size)
+
+    return sc
+end
+
+function AbstractPlotting.plot!(sc::FieldPlot{<:Tuple{ScalarField{2}}})
+    f = sc[1]
+
+    grid, data = unwrap(f)
+
+    cl = @lift ustrip(max(abs.(extrema($f))...))
+    valuerange = @lift (-$cl, $cl)
+    replace_automatic!(sc, :colorrange) do
+        valuerange
+    end
+
+    plt = heatmap!(sc, grid..., data; sc.colorrange, sc.colormap)
+
+    return sc
+end
+
+function AbstractPlotting.plot!(sc::FieldPlot{<:Tuple{ScalarField{3}}})
+    f = sc[1]
+
+    cl = @lift ustrip(max(abs.(extrema($f))...))
+    valuerange = @lift (-$cl, $cl)
+    replace_automatic!(sc, :colorrange) do
+        valuerange
+    end
+    @lift @debug "Contour plot for 3D ScalarField with " * string($(sc.levels)) * " levels"
+
+    plt = contour!(sc, f; sc.colorrange, sc.colormap, sc.color, levels=sc.levels)
+
+    return sc
+end
+
+function AbstractPlotting.plot!(sc::FieldPlot{<:Tuple{VectorField{N}}}) where N
+    f = sc[1]
+
+    arrow_norm = @lift Float32.(vec(norm.(ustrip($f))))
+    maxarrow = @lift maximum(norm.(ustrip($f)))
+
+    arrowsize = @lift $(sc.arrowsize_factor)*$arrow_norm
+    lengthscale = @lift $(sc.lengthscale_factor)/$maxarrow
+    valuerange = @lift extrema($arrow_norm)
+    replace_automatic!(sc, :colorrange) do
+        valuerange
+    end
+
+    plt = arrows!(sc, f;
+        arrowcolor=arrow_norm,
+        arrowsize,
+        linecolor=arrow_norm,
+        lengthscale,
+        linewidth,
+        sc.colormap,
+        sc.colorrange
+    )
 
     return sc
 end

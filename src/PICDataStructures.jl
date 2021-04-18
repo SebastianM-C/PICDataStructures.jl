@@ -3,26 +3,33 @@ module PICDataStructures
 export AbstractPICDataStructure,
     ScalarField, ScalarVariable, VectorField, VectorVariable,
     AbstractGrid, AbstractAxisGrid, AxisGrid, SparseAxisGrid, ParticlePositions,
-    build_vector, getdomain, mapgrid, scalarfield, scalarvariable,
+    build_vector, getdomain, mapgrid, scalarfield, scalarvariable, hasunits,
     downsample, slice,
     scalarness, domain_type, domain_discretization,
     ScalarQuantity, VectorQuantity, LatticeGrid, ParticleGrid
 
+# Arrays
+using StaticArrays
+using StructArrays
+using RecursiveArrayTools
+using ArrayInterface: parameterless_type
+using StructArrays: components, component, similar_structarray
+using Base.Broadcast: Broadcasted, ArrayStyle
+using Base: @propagate_inbounds
+# Math
 using LinearAlgebra
 using CoordinateTransformations
 using ImageTransformations
-using StaticArrays
-using StructArrays
-using StructArrays: components
-using RecursiveArrayTools
 using IntervalSets
-using ArrayInterface: parameterless_type
+# Units
 using Unitful
 using Unitful: Units
+# Plotting
 using AbstractPlotting
+using AbstractPlotting: PointBased, SurfaceLike, VolumeLike
 import RecipesBase, UnitfulRecipes
 
-abstract type AbstractPICDataStructure{T,N} <: AbstractArray{T,N} end
+abstract type AbstractPICDataStructure{T,N,G} <: AbstractArray{T,N} end
 
 include("abstractarray.jl")
 include("grids.jl")

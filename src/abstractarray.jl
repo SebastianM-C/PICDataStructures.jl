@@ -1,14 +1,22 @@
 # Indexing
-Base.@propagate_inbounds Base.getindex(f::AbstractPICDataStructure, i::Int) = unwrapdata(f)[i]
-Base.@propagate_inbounds Base.setindex!(f::AbstractPICDataStructure, v, i::Int) = unwrapdata(f)[i] = v
+@propagate_inbounds function Base.getindex(f::T, i::Int) where T <: AbstractPICDataStructure
+    getindex(scalarness(T), f, i)
+end
+@propagate_inbounds function Base.setindex!(f::T, v, i::Int) where T <: AbstractPICDataStructure
+    setindex!(scalarness(T), f, v, i)
+end
 
 Base.firstindex(f::AbstractPICDataStructure) = firstindex(unwrapdata(f))
 Base.lastindex(f::AbstractPICDataStructure) = lastindex(unwrapdata(f))
 
-Base.size(f::AbstractPICDataStructure, dim...) = size(unwrapdata(f), dim...)
+function Base.size(f::AbstractPICDataStructure, dim...)
+    size(unwrapdata(f), dim...)
+end
 
 Base.LinearIndices(f::AbstractPICDataStructure) = LinearIndices(unwrapdata(f))
 Base.IndexStyle(::Type{<:AbstractPICDataStructure}) = Base.IndexLinear()
+
+Base.eltype(::T) where T <: AbstractPICDataStructure = eltype(scalarness(T), T)
 
 # Iteration
 Base.iterate(f::AbstractPICDataStructure, state...) = iterate(unwrapdata(f), state...)

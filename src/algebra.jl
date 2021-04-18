@@ -1,10 +1,3 @@
-function LinearAlgebra.norm(field::T) where T<:AbstractPICDataStructure
-    data = unwrapdata(field)
-    grid = getdomain(field)
-
-    scalar_from(T)(norm.(data), grid)
-end
-
 function LinearAlgebra.cross(a::T1, b::T2) where {T1 <: AbstractPICDataStructure, T2 <: AbstractPICDataStructure}
     @assert size(a) == size(b)
     @assert scalarness(T1) === scalarness(T2) === VectorQuantity() "The cross product is only defined for Vector quantities"

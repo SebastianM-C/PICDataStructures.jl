@@ -1,20 +1,19 @@
-struct VectorField{N,M,T,D<:AbstractArray{T,M},G} <: AbstractPICDataStructure{T,N}
-    data::D
-    grid::G
-end
-
-struct VectorVariable{N,M,T,D<:AbstractArray{T,M},G} <: AbstractPICDataStructure{T,N}
-    data::D
-    grid::G
-end
+abstract type AbstractVectorQuantity{T,N} <: AbstractArray{T,N} end
 
 struct VectorQuantity end
-struct ParticleGrid end
 
-scalarness(::Type{<:VectorField}) = VectorQuantity()
-scalarness(::Type{<:VectorVariable}) = VectorQuantity()
+struct VectorField{N,M,T,D<:AbstractArray{T,M},G} <: AbstractPICDataStructure{T,N,G}
+    data::D
+    grid::G
+end
 
-abstract type AbstractVectorQuantity{T,N} <: AbstractArray{T,N} end
+struct VectorVariable{N,M,T,D<:AbstractArray{T,M},G} <: AbstractPICDataStructure{T,N,G}
+    data::D
+    grid::G
+end
+
+@inline scalarness(::Type{<:VectorField}) = VectorQuantity()
+@inline scalarness(::Type{<:VectorVariable}) = VectorQuantity()
 
 function VectorField{N}(data::D, grid::G) where {N, M, T, D <: AbstractArray{T,M}, G}
     VectorField{N, M, T, D, G}(data, grid)
@@ -28,12 +27,8 @@ function VectorField(data::AbstractArray{T,M}, grid::G) where {N, M, G, T<:SArra
     VectorField{N}(data, grid)
 end
 
-function VectorVariable{N}(data::D, grid::G) where {N, M, T, D <: AbstractArray{T,M}, G}
-    VectorVariable{N, M, T, D, G}(data, grid)
-end
-
-function VectorVariable(data::AbstractArray{T,M}, grid::G) where {N, M, P, G, S<:NTuple{N}, T<:NamedTuple{P,S}}
-    VectorVariable{N}(data, grid)
+function VectorVariable(data::D, grid::G) where {N, M, T, D <: AbstractArray{T,M}, G}
+    VectorVariable{1, M, T, D, G}(data, grid)
 end
 
 function vector2nt(f::AbstractPICDataStructure, v::SArray{Tuple{N},T}) where {N,T}
@@ -49,53 +44,57 @@ function vector2nt(data::StructArray, ::Type{<:SArray{Tuple{N},T}}) where {N,T}
     return NamedTuple{names, NTuple{N,T}}
 end
 
+# Broadcasting
+
 Base.BroadcastStyle(::VectorQuantity, ::Type{<:AbstractPICDataStructure}) = Broadcast.ArrayStyle{AbstractVectorQuantity}()
 
 function similar_data(data::StructArray{T}, ElType, dims) where T
-    # @debug typeof(data) ElType
+    @debug "Building similar StructArray with type $(typeof(data)) end eltype $ElType"
     S = vector2nt(data, ElType)
-    StructArray{S}(map(typ -> similar(typ, dims), components(data)))
+
+    props = propertynames(data)
+    N = length(props)
+    eltypes = NTuple{N, eltype(ElType)}
+    @debug "Element eltypes: $eltypes"
+    output_eltype = NamedTuple{props, eltypes}
+    similar(similar_structarray(data, output_eltype), dims)
 end
 
-function Base.similar(bc::Broadcast.Broadcasted{Broadcast.ArrayStyle{AbstractVectorQuantity}}, ::Type{ElType}) where ElType
+function Base.similar(bc::Broadcasted{ArrayStyle{AbstractVectorQuantity}}, ::Type{ElType}) where ElType
     # Scan the inputs for the AbstractPICDataStructure:
     f = find_field(bc)
     @debug "Building datastructure similar to $(typeof(f)) with eltype $ElType"
     grid = getdomain(f)
     # Keep the same grid for the output
-    data_type = similar_data(unwrapdata(f), ElType, axes(bc))
-    # @debug "Data type: $(typeof(data_type))"
-    parameterless_type(f)(data_type, grid)
+    data = similar_data(unwrapdata(f), ElType, axes(bc))
+    @debug "Output data type: $(typeof(data))"
+    parameterless_type(f)(data, grid)
 end
 
-function Base.similar(bc::Broadcast.Broadcasted{Broadcast.ArrayStyle{AbstractVectorQuantity}}, ::Type{ElType}) where ElType <: Number
+function Base.similar(bc::Broadcasted{ArrayStyle{AbstractVectorQuantity}}, ::Type{ElType}) where ElType <: Number
     # Scan the inputs for the AbstractPICDataStructure:
     f = find_field(bc)
     @debug "Building datastructure similar to $(typeof(f)) with eltype $ElType"
     grid = getdomain(f)
     # Keep the same grid for the output
-    data_type = similar(unwrapdata(f), ElType, axes(bc))
-    # @debug "Data type: $(typeof(data_type))"
-    scalar_from(typeof(f))(data_type, grid)
+    data = similar(unwrapdata(f), ElType, axes(bc))
+    @debug "Output data type: $(typeof(data))"
+    scalar_from(typeof(f))(data, grid)
 end
 
 # Indexing
-Base.@propagate_inbounds function Base.getindex(f::VectorField{N}, i::Int) where N
-    SVector{N}(unwrapdata(f)[i]...)
+@propagate_inbounds function Base.getindex(::VectorQuantity, v::T, i) where T
+    N = dimensionality(T)
+    SVector{N}(unwrapdata(v)[i]...)
 end
-Base.@propagate_inbounds function Base.setindex!(f::VectorField, v::SVector, i::Int)
+@propagate_inbounds function Base.setindex!(::VectorQuantity, f, v::SVector, i::Int)
     # @debug typeof(f.data)
     unwrapdata(f)[i] = vector2nt(f, v)
 end
-Base.@propagate_inbounds function Base.getindex(f::VectorVariable{N}, i::Int) where N
-    SVector{N}(unwrapdata(f)[i]...)
-end
-Base.@propagate_inbounds function Base.setindex!(f::VectorVariable, v::SVector, i::Int)
-    unwrapdata(f)[i] = vector2nt(f, v)
-end
 
-Base.eltype(::VectorField{N,M,T}) where {N,M,T} = SVector{N,recursive_bottom_eltype(T)}
-Base.eltype(::VectorVariable{N,M,T}) where {N,M,T} = SVector{N,recursive_bottom_eltype(T)}
+function Base.eltype(::VectorQuantity, v::Type{T}) where T
+    SVector{dimensionality(T),recursive_bottom_eltype(T)}
+end
 
 function Base.similar(f::VectorField, ::Type{S}, dims::Dims) where S
     # @debug "Building similar vector field of type $S"
@@ -134,5 +133,5 @@ function build_vector(components::NTuple{N, T}, names::NTuple{N, Symbol}) where 
     end
 
     vectortype = vector_from(T)
-    vectortype{N}(data, x.grid)
+    vectortype(data, x.grid)
 end

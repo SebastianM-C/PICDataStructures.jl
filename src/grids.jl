@@ -37,9 +37,13 @@ Base.eltype(g::AbstractGrid{N,T}) where {N,T} = eltype(g.grid)
 Base.length(g::AbstractGrid) = length(g.grid)
 Base.iterate(g::AbstractGrid, state...) = iterate(g.grid, state...)
 
-Base.@propagate_inbounds Base.getindex(g::AbstractGrid, i) = getfield(g, :grid)[i]
+# This makes size(field) == size(grid)
+Base.size(g::AbstractAxisGrid) = (length.(g.grid)...,)
+Base.size(g::ParticlePositions) = (length(first(g)), )
 
-Base.@propagate_inbounds function Base.getindex(grid::ParticlePositions{N}, idxs::Vector{Int}) where N
+@propagate_inbounds Base.getindex(g::AbstractGrid, i) = getfield(g, :grid)[i]
+
+@propagate_inbounds function Base.getindex(grid::ParticlePositions{N}, idxs::Vector{Int}) where N
     g = ntuple(N) do i
         grid[i][idxs]
     end
@@ -68,4 +72,16 @@ function Base.append!(grid::ParticlePositions, new_grid::ParticlePositions)
     grid.maxvals .= new_grid.maxvals
 
     return grid
+end
+
+function Base.dropdims(grid::AbstractGrid{N}; dims) where N
+    selected_dims = filter(i->i≠dims, Base.OneTo(N))
+
+    g = ntuple(N-1) do i
+        grid[selected_dims[i]]
+    end
+    if(any(isempty.(g)))
+        empty(grid)
+    end
+    parameterless_type(grid)(g)
 end

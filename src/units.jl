@@ -10,6 +10,8 @@ end
 
 ustrip_data(data) = ustrip.(data)
 ustrip_data(data::StructArray) = StructArray(map(ustrip, components(data)))
+uconvert_data(u, data) = uconvert.((u,), data)
+uconvert_data(u, data::StructArray) = StructArray(map(c->uconvert.((u,),c), components(data)))
 
 function Unitful.ustrip(g::AbstractAxisGrid)
     AxisGrid(broadcast_grid(ustrip, g.grid))
@@ -26,7 +28,7 @@ function Unitful.ustrip(g::ParticlePositions{N}) where N
     ParticlePositions(ug, MVector(min), MVector(max))
 end
 
-for f in (:uconvert, :ustrip)
+for (f, ff) in zip((:uconvert, :ustrip), (:uconvert_data, :ustrip_data))
     @eval begin
         function (Unitful.$f)(units::Units, g::AbstractAxisGrid)
             AxisGrid(broadcast_grid($f, units, g.grid))
@@ -42,17 +44,21 @@ for f in (:uconvert, :ustrip)
             ParticlePositions(ug, MVector(min), MVector(max))
         end
         function (Unitful.$f)(u_data::Units, f::AbstractPICDataStructure)
-            data = map(d->($f)(u_data, d), unwrapdata(f))
+            data = $ff(u_data, unwrapdata(f))
             grid = getdomain(f)
 
             parameterless_type(f)(data, grid)
         end
 
         function (Unitful.$f)(u_data::Units, u_grid::Units, f::AbstractPICDataStructure)
-            data = map(d->($f)(u_data, d), unwrapdata(f))
+            data = $ff(u_data, unwrapdata(f))
             grid = $f(u_grid, getdomain(f))
 
             parameterless_type(f)(data, grid)
         end
     end
 end
+
+recursive_bottom_unit(f) = unit(recursive_bottom_eltype(f))
+hasunits(f) = recursive_bottom_unit(f) ≠ NoUnits
+unitname(f) = hasunits(f) ? string(recursive_bottom_unit(f)) : ""
