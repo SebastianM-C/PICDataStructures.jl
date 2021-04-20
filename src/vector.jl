@@ -107,12 +107,15 @@ function Base.similar(f::VectorVariable, ::Type{S}, dims::Dims) where S
 end
 
 # Acessing the internal data storage by column names
-get_property(f, key) = getproperty(unwrapdata(f), key)
+function get_componenet(f::T, key) where T
+    data = getproperty(unwrapdata(f), key)
+    grid = getdomain(f)
 
-Base.getproperty(f::VectorField, key::Symbol) = get_property(f, key)
-Base.getproperty(f::VectorVariable, key::Symbol) = get_property(f, key)
-Base.propertynames(f::VectorField) = propertynames(unwrapdata(f))
-Base.propertynames(f::VectorVariable) = propertynames(unwrapdata(f))
+    scalar_from(T)(data, grid)
+end
+
+Base.getproperty(::VectorQuantity, f, key::Symbol) = get_componenet(f, key)
+Base.propertynames(::VectorQuantity, f::AbstractPICDataStructure) = propertynames(unwrapdata(f))
 
 vector_from(::Type{<:ScalarField}) = VectorField
 vector_from(::Type{<:ScalarVariable}) = VectorVariable

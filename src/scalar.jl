@@ -35,3 +35,6 @@ function Base.similar(bc::Broadcast.Broadcasted{Broadcast.ArrayStyle{AbstractSca
     @debug "Output data type: $(typeof(data))"
     parameterless_type(f)(data, grid)
 end
+
+Base.getproperty(::ScalarQuantity, f, key::Symbol) = getfield(f, key)
+Base.propertynames(::ScalarQuantity, f::AbstractPICDataStructure) = fieldnames(typeof(f))
