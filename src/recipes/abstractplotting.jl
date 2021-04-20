@@ -3,8 +3,10 @@ include("typerecipes.jl")
 @recipe(FieldPlot) do scene
     Attributes(
         lengthscale_factor = 1,
+        # linewidth_factor = 1,
         arrowsize_factor = 1;
-        :color => nothing,
+        :linewidth => 1,
+        :color => AbstractPlotting.automatic,
         :colormap => :jet1,
         :colorrange => AbstractPlotting.automatic,
         :levels => 6,
@@ -73,7 +75,12 @@ function AbstractPlotting.plot!(sc::FieldPlot{<:Tuple{ScalarField{3}}})
     end
     @lift @debug "Contour plot for 3D ScalarField with " * string($(sc.levels)) * " levels"
 
-    plt = contour!(sc, f; sc.colorrange, sc.colormap, sc.color, levels=sc.levels)
+    plt = contour!(sc, f;
+        sc.colorrange,
+        sc.colormap,
+        sc.color,
+        sc.levels
+    )
 
     return sc
 end
@@ -86,6 +93,7 @@ function AbstractPlotting.plot!(sc::FieldPlot{<:Tuple{VectorField{N}}}) where N
 
     arrowsize = @lift $(sc.arrowsize_factor)*$arrow_norm
     lengthscale = @lift $(sc.lengthscale_factor)/$maxarrow
+    # linewidth = @lift $(sc.linewidth_factor)*$arrow_norm
     valuerange = @lift extrema($arrow_norm)
     replace_automatic!(sc, :colorrange) do
         valuerange
@@ -96,7 +104,8 @@ function AbstractPlotting.plot!(sc::FieldPlot{<:Tuple{VectorField{N}}}) where N
         arrowsize,
         linecolor=arrow_norm,
         lengthscale,
-        linewidth,
+        sc.linewidth,
+        sc.color,
         sc.colormap,
         sc.colorrange
     )
