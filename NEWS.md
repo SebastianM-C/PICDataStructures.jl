@@ -1,6 +1,7 @@
 # Version v0.4.1
 
 ## New features
+- The components for vector quantities accesible by `getproperty` are now scalars as oposed to the underlying unwrapped data.
 - Export `unitname`. This function gives the name of the units for the input.
 # Version v0.4
 

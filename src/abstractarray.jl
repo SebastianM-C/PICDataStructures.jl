@@ -54,3 +54,6 @@ function find_field(::Any, rest)
     # @debug "Recursing in the second argument $(typeof(rest))"
     find_field(rest)
 end
+
+Base.getproperty(f::T, k::Symbol) where T <: AbstractPICDataStructure = getproperty(scalarness(T), f, k)
+Base.propertynames(f::T) where T <: AbstractPICDataStructure = propertynames(scalarness(T), f)
