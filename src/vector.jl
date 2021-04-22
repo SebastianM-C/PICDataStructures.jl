@@ -96,13 +96,8 @@ function Base.eltype(::VectorQuantity, v::Type{T}) where T
     SVector{dimensionality(T),recursive_bottom_eltype(T)}
 end
 
-function Base.similar(f::VectorField, ::Type{S}, dims::Dims) where S
-    # @debug "Building similar vector field of type $S"
-    parameterless_type(f)(StructArray(similar(unwrapdata(f), S, dims)), getdomain(f))
-end
-
-function Base.similar(f::VectorVariable, ::Type{S}, dims::Dims) where S
-    # @debug "Building similar vector variable of type $S"
+function Base.similar(::VectorQuantity, f, ::Type{S}, dims::Dims) where S
+    # @debug "Building similar VectorQuantity of type $S"
     parameterless_type(f)(StructArray(similar(unwrapdata(f), S, dims)), getdomain(f))
 end
 

@@ -25,9 +25,9 @@ Base.length(f::AbstractPICDataStructure) = length(unwrapdata(f))
 # Broadcasting
 Base.BroadcastStyle(::Type{T}) where T<:AbstractPICDataStructure = Base.BroadcastStyle(scalarness(T), T)
 
-function Base.similar(f::AbstractPICDataStructure, ::Type{S}, dims::Dims) where S
-    @debug "similar AbstractPICDataStructure"
-    parameterless_type(f)(similar(unwrapdata(f), S, dims), getdomain(f))
+function Base.similar(f::T, typ::Type{S}, dims::Dims) where {S, T <: AbstractPICDataStructure}
+    # @debug "similar AbstractPICDataStructure"
+    similar(scalarness(T), f, typ, dims)
 end
 
 """
