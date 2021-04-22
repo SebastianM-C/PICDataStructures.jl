@@ -33,8 +33,10 @@ Base.dropdims(f::T; dims) where T <: AbstractPICDataStructure = dropdims(scalarn
 
 function Base.dropdims(::VectorQuantity, f; dims)
     selected_dims = filter(c->c≠dims, propertynames(f))
-    data = unwrapdata(f)
-    grid = getdomain(f)
+    @debug "Selected dims: $selected_dims"
+    dir = dir_to_idx.(dims)
+    data = dropdims(unwrapdata(f); dims=dir)
+    grid = dropdims(getdomain(f); dims=dir)
 
     selected_data = StructArray(component.((data,), selected_dims), names=selected_dims)
 
