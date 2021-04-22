@@ -31,17 +31,10 @@ function VectorVariable(data::D, grid::G) where {N, M, T, D <: AbstractArray{T,M
     VectorVariable{1, M, T, D, G}(data, grid)
 end
 
-function vector2nt(f::AbstractPICDataStructure, v::SArray{Tuple{N},T}) where {N,T}
+function vector2nt(f, v::SArray{Tuple{N},T}) where {N,T}
     # @debug "Data type $(typeof(f.data)) and $(typeof(v))"
     names = propertynames(f)
     NamedTuple{names, NTuple{N,T}}(v)
-end
-
-function vector2nt(data::StructArray, ::Type{<:SArray{Tuple{N},T}}) where {N,T}
-    names = propertynames(data)
-    # @debug N
-
-    return NamedTuple{names, NTuple{N,T}}
 end
 
 # Broadcasting
@@ -50,7 +43,6 @@ Base.BroadcastStyle(::VectorQuantity, ::Type{<:AbstractPICDataStructure}) = Broa
 
 function similar_data(data::StructArray{T}, ElType, dims) where T
     @debug "Building similar StructArray with type $(typeof(data)) end eltype $ElType"
-    S = vector2nt(data, ElType)
 
     props = propertynames(data)
     N = length(props)
