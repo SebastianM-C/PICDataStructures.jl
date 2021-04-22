@@ -20,10 +20,18 @@ function VectorField{N}(data::D, grid::G) where {N, M, T, D <: AbstractArray{T,M
 end
 
 function VectorField(data::AbstractArray{T,M}, grid::G) where {N, M, P, G, S<:NTuple{N}, T<:NamedTuple{P,S}}
+    @debug "Array of NamedTuple"
     VectorField{N}(data, grid)
 end
 
-function VectorField(data::AbstractArray{T,M}, grid::G) where {N, M, G, T<:SArray{N}}
+function VectorField(row_data::AbstractArray{T,M}, grid::G, names) where {N, M, G, T<:SVector{N}}
+    @debug "Building $(N)D VectorField row-wise from $T"
+    ElType = NamedTuple{names, NTuple{N,recursive_bottom_eltype(row_data)}}
+    @debug "Got ElType $ElType"
+    data = StructArray{ElType}(undef, size(row_data))
+    for i in eachindex(data, row_data)
+        data[i] = vector2nt(data, row_data[i])
+    end
     VectorField{N}(data, grid)
 end
 
@@ -110,10 +118,12 @@ scalar_from(::Type{<:VectorField}) = ScalarField
 scalar_from(::Type{<:VectorVariable}) = ScalarVariable
 
 function build_vector(components::NTuple{N, T}, names::NTuple{N, Symbol}) where {N, T}
-    data_components = ntuple(N) do c
-        getfield(components[c], :data)
-    end
-    data = StructArray(data_components; names)
+    # We cannot have StructArrays with ScalarField components because we cannot
+    # correctly build them through similar because StructArrays doens't have a
+    # similar(::StructArray, ElType)
+    # We fake this by creating the field in getproperty
+    data_components = NamedTuple(name=>unwrapdata(c) for (name,c) in zip(names, components))
+    data = StructArray(data_components)
     x = first(components)
 
     for c in components
