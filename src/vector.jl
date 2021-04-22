@@ -2,12 +2,12 @@ abstract type AbstractVectorQuantity{T,N} <: AbstractArray{T,N} end
 
 struct VectorQuantity end
 
-struct VectorField{N,M,T,D<:AbstractArray{T,M},G} <: AbstractPICDataStructure{T,N,G}
+struct VectorField{N,M,T,D<:AbstractArray{T,M},G<:AbstractAxisGrid} <: AbstractPICDataStructure{T,N,G}
     data::D
     grid::G
 end
 
-struct VectorVariable{N,M,T,D<:AbstractArray{T,M},G} <: AbstractPICDataStructure{T,N,G}
+struct VectorVariable{N,M,T,D<:AbstractArray{T,M},G<:ParticlePositions} <: AbstractPICDataStructure{T,N,G}
     data::D
     grid::G
 end

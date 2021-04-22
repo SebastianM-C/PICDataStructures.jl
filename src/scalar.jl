@@ -2,12 +2,12 @@ abstract type AbstractScalarQuantity{T,N} <: AbstractArray{T,N} end
 
 struct ScalarQuantity end
 
-struct ScalarField{N,T,D<:AbstractArray{T,N},G} <: AbstractPICDataStructure{T,N,G}
+struct ScalarField{N,T,D<:AbstractArray{T,N},G<:AbstractAxisGrid} <: AbstractPICDataStructure{T,N,G}
     data::D
     grid::G
 end
 
-struct ScalarVariable{N,T,D<:AbstractArray{T,N},G} <: AbstractPICDataStructure{T,N,G}
+struct ScalarVariable{N,T,D<:AbstractArray{T,N},G<:ParticlePositions} <: AbstractPICDataStructure{T,N,G}
     data::D
     grid::G
 end
