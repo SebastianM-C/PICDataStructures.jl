@@ -2,12 +2,12 @@ abstract type AbstractScalarQuantity{T,N} <: AbstractArray{T,N} end
 
 struct ScalarQuantity end
 
-struct ScalarField{N,T,D<:AbstractArray{T,N},G} <: AbstractPICDataStructure{T,N,G}
+struct ScalarField{N,T,D<:AbstractArray{T,N},G<:AbstractAxisGrid} <: AbstractPICDataStructure{T,N,G}
     data::D
     grid::G
 end
 
-struct ScalarVariable{N,T,D<:AbstractArray{T,N},G} <: AbstractPICDataStructure{T,N,G}
+struct ScalarVariable{N,T,D<:AbstractArray{T,N},G<:ParticlePositions} <: AbstractPICDataStructure{T,N,G}
     data::D
     grid::G
 end
@@ -34,6 +34,11 @@ function Base.similar(bc::Broadcast.Broadcasted{Broadcast.ArrayStyle{AbstractSca
     data = similar(unwrapdata(f), ElType, axes(bc))
     @debug "Output data type: $(typeof(data))"
     parameterless_type(f)(data, grid)
+end
+
+function Base.similar(::ScalarQuantity, f, ::Type{S}, dims::Dims) where S
+    # @debug "similar ScalarQuantity"
+    parameterless_type(f)(similar(unwrapdata(f), S, dims), getdomain(f))
 end
 
 Base.getproperty(::ScalarQuantity, f, key::Symbol) = getfield(f, key)

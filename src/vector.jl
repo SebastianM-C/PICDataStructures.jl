@@ -2,12 +2,12 @@ abstract type AbstractVectorQuantity{T,N} <: AbstractArray{T,N} end
 
 struct VectorQuantity end
 
-struct VectorField{N,M,T,D<:AbstractArray{T,M},G} <: AbstractPICDataStructure{T,N,G}
+struct VectorField{N,M,T,D<:AbstractArray{T,M},G<:AbstractAxisGrid} <: AbstractPICDataStructure{T,N,G}
     data::D
     grid::G
 end
 
-struct VectorVariable{N,M,T,D<:AbstractArray{T,M},G} <: AbstractPICDataStructure{T,N,G}
+struct VectorVariable{N,M,T,D<:AbstractArray{T,M},G<:ParticlePositions} <: AbstractPICDataStructure{T,N,G}
     data::D
     grid::G
 end
@@ -20,10 +20,18 @@ function VectorField{N}(data::D, grid::G) where {N, M, T, D <: AbstractArray{T,M
 end
 
 function VectorField(data::AbstractArray{T,M}, grid::G) where {N, M, P, G, S<:NTuple{N}, T<:NamedTuple{P,S}}
+    @debug "Array of NamedTuple"
     VectorField{N}(data, grid)
 end
 
-function VectorField(data::AbstractArray{T,M}, grid::G) where {N, M, G, T<:SArray{N}}
+function VectorField(row_data::AbstractArray{T,M}, grid::G, names) where {N, M, G, T<:SVector{N}}
+    @debug "Building $(N)D VectorField row-wise from $T"
+    ElType = NamedTuple{names, NTuple{N,recursive_bottom_eltype(row_data)}}
+    @debug "Got ElType $ElType"
+    data = StructArray{ElType}(undef, size(row_data))
+    for i in eachindex(data, row_data)
+        data[i] = vector2nt(data, row_data[i])
+    end
     VectorField{N}(data, grid)
 end
 
@@ -31,17 +39,10 @@ function VectorVariable(data::D, grid::G) where {N, M, T, D <: AbstractArray{T,M
     VectorVariable{1, M, T, D, G}(data, grid)
 end
 
-function vector2nt(f::AbstractPICDataStructure, v::SArray{Tuple{N},T}) where {N,T}
+function vector2nt(f, v::SArray{Tuple{N},T}) where {N,T}
     # @debug "Data type $(typeof(f.data)) and $(typeof(v))"
     names = propertynames(f)
     NamedTuple{names, NTuple{N,T}}(v)
-end
-
-function vector2nt(data::StructArray, ::Type{<:SArray{Tuple{N},T}}) where {N,T}
-    names = propertynames(data)
-    # @debug N
-
-    return NamedTuple{names, NTuple{N,T}}
 end
 
 # Broadcasting
@@ -50,7 +51,6 @@ Base.BroadcastStyle(::VectorQuantity, ::Type{<:AbstractPICDataStructure}) = Broa
 
 function similar_data(data::StructArray{T}, ElType, dims) where T
     @debug "Building similar StructArray with type $(typeof(data)) end eltype $ElType"
-    S = vector2nt(data, ElType)
 
     props = propertynames(data)
     N = length(props)
@@ -96,13 +96,8 @@ function Base.eltype(::VectorQuantity, v::Type{T}) where T
     SVector{dimensionality(T),recursive_bottom_eltype(T)}
 end
 
-function Base.similar(f::VectorField, ::Type{S}, dims::Dims) where S
-    # @debug "Building similar vector field of type $S"
-    parameterless_type(f)(StructArray(similar(unwrapdata(f), S, dims)), getdomain(f))
-end
-
-function Base.similar(f::VectorVariable, ::Type{S}, dims::Dims) where S
-    # @debug "Building similar vector variable of type $S"
+function Base.similar(::VectorQuantity, f, ::Type{S}, dims::Dims) where S
+    # @debug "Building similar VectorQuantity of type $S"
     parameterless_type(f)(StructArray(similar(unwrapdata(f), S, dims)), getdomain(f))
 end
 
@@ -123,10 +118,12 @@ scalar_from(::Type{<:VectorField}) = ScalarField
 scalar_from(::Type{<:VectorVariable}) = ScalarVariable
 
 function build_vector(components::NTuple{N, T}, names::NTuple{N, Symbol}) where {N, T}
-    data_components = ntuple(N) do c
-        getfield(components[c], :data)
-    end
-    data = StructArray(data_components; names)
+    # We cannot have StructArrays with ScalarField components because we cannot
+    # correctly build them through similar because StructArrays doens't have a
+    # similar(::StructArray, ElType)
+    # We fake this by creating the field in getproperty
+    data_components = NamedTuple(name=>unwrapdata(c) for (name,c) in zip(names, components))
+    data = StructArray(data_components)
     x = first(components)
 
     for c in components

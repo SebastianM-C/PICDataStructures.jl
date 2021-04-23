@@ -92,8 +92,9 @@ end
 slice(::ScalarQuantity, f, dir, idx) = selectdim(f, dir, idx)
 
 function slice(::VectorQuantity, f, dir, idx)
+    @debug "Slicing vector quantity"
     s = selectdim(f, dir, idx)
-    dropdims(s, dims=dir)
+    # dropdims(s, dims=dir)
 end
 
 function Base.selectdim(::LatticeGrid, f, dir, idx::Int)
@@ -104,4 +105,18 @@ function Base.selectdim(::LatticeGrid, f, dir, idx::Int)
     grid_slice = dropdims(grid, dims=dim)
 
     parameterless_type(f)(data, grid_slice)
+end
+
+Base.dropdims(f::T; dims) where T <: AbstractPICDataStructure = dropdims(scalarness(T), f; dims)
+
+function Base.dropdims(::VectorQuantity, f; dims)
+    selected_dims = filter(c->c≠dims, propertynames(f))
+    @debug "Selected dims: $selected_dims"
+    dir = dir_to_idx.(dims)
+    data = unwrapdata(f)
+    grid = dropdims(getdomain(f); dims=dir)
+
+    selected_data = StructArray(component.((data,), selected_dims), names=selected_dims)
+
+    parameterless_type(f)(selected_data, grid)
 end

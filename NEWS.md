@@ -1,8 +1,12 @@
 # Version v0.4.1
 
 ## New features
+- Vector fields can now be also constructed form `AbstractArray`s of `SVector`s of the components.
 - The components for vector quantities accesible by `getproperty` are now scalars as oposed to the underlying unwrapped data.
 - Export `unitname`. This function gives the name of the units for the input.
+
+## Bug fixes
+- `dropdims` for `VectorQuantity` now correctly dorps the given `dims` from the grid.
 # Version v0.4
 
 ## Breaking changes
