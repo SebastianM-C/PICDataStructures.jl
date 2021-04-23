@@ -83,7 +83,7 @@ using StaticArrays
             end
         end
 
-        @testset "Sclicing" begin
+        @testset "Slicing" begin
             if N > 1
                 f_slice = slice(f, :x, zero(recursive_bottom_eltype(grid)))
                 @test dimensionality(f_slice) == dimensionality(f) - 1

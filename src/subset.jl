@@ -92,8 +92,9 @@ end
 slice(::ScalarQuantity, f, dir, idx) = selectdim(f, dir, idx)
 
 function slice(::VectorQuantity, f, dir, idx)
+    @debug "Slicing vector quantity"
     s = selectdim(f, dir, idx)
-    dropdims(s, dims=dir)
+    # dropdims(s, dims=dir)
 end
 
 function Base.selectdim(::LatticeGrid, f, dir, idx::Int)
