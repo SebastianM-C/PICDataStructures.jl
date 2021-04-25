@@ -64,9 +64,17 @@ using RecursiveArrayTools: recursive_bottom_eltype
             if N == 3
                 f_small = downsample(f, 150, 50, 50)
                 @test size(f_small) == (150, 50, 50)
+                f_small = downsample(f)
+                # in case the downsampling size is too close
+                # to the target one, we will get the same size
+                @test size(f_small) == size(f)
+                f_small = downsample(f, approx_size=50)
+                @test all(size(f_small) .≤ 50)
             elseif N == 2
                 f_small = downsample(f, 50, 50)
                 @test size(f_small) == (50, 50)
+                f_small = downsample(f)
+                @test all(size(f_small) .≤ 160)
             else
                 f_small = downsample(f, 5)
                 @test size(f_small) == (5,)
@@ -139,6 +147,8 @@ end
         @testset "Downsampling" begin
             f_small = downsample(v, 5)
             @test size(f_small) == (5,)
+            v_small = downsample(v)
+            @test all(size(v_small) .≤ size(v))
         end
 
         @testset "Sclicing" begin
