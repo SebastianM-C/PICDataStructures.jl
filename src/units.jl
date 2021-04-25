@@ -10,6 +10,8 @@ end
 
 ustrip_data(data) = ustrip.(data)
 ustrip_data(data::StructArray) = StructArray(map(ustrip, components(data)))
+ustrip_data(u, data) = ustrip.((u,), data)
+ustrip_data(u, data::StructArray) = StructArray(map(c->ustrip.((u,),c), components(data)))
 uconvert_data(u, data) = uconvert.((u,), data)
 uconvert_data(u, data::StructArray) = StructArray(map(c->uconvert.((u,),c), components(data)))
 

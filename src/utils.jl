@@ -88,3 +88,8 @@ function scalarvariable(f, grid)
     data = mapgrid(f, grid)
     ScalarVariable(data, grid)
 end
+
+function vectorfield(f, grid)
+    data = mapgrid(f, grid)
+    VectorField(data, grid, (:x,:y,:z))
+end
