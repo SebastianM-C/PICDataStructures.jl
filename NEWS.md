@@ -1,3 +1,10 @@
+# Version v0.5.0
+
+## New features
+
+## Breaking changes
+- `slice` has been replaced by `selectdims` and it now has a more consistent behavior.
+
 # Version v0.4.1
 
 ## New features
@@ -7,7 +14,7 @@
 
 ## Bug fixes
 - `dropdims` for `VectorQuantity` now correctly dorps the given `dims` from the grid.
-# Version v0.4
+# Version v0.4.0
 
 ## Breaking changes
 - `norm(f::AbstractPICDataStructure)` has been removed in favour of `norm.(f)`, as the latter is now possible and faster
