@@ -75,7 +75,9 @@ function Base.append!(grid::ParticlePositions, new_grid::ParticlePositions)
 end
 
 function Base.dropdims(grid::AbstractGrid{N}; dims) where N
-    selected_dims = filter(i->i≠dims, Base.OneTo(N))
+    dir = dir_to_idx.(dims)
+    selected_dims = filter(i->i≠dir, Base.OneTo(N))
+    @debug "Selected grid dims: $selected_dims"
 
     g = ntuple(N-1) do i
         grid[selected_dims[i]]
