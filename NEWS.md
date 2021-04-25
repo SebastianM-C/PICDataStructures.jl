@@ -1,7 +1,7 @@
 # Version v0.5.0
 
 ## New features
-
+- `downsample` with no arguments now computes a heuristic target size based on the type of the input.
 ## Breaking changes
 - `slice` has been replaced by `selectdims` and it now has a more consistent behavior.
 
