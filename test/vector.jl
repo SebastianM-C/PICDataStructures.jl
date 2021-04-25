@@ -85,8 +85,9 @@ using StaticArrays
 
         @testset "Slicing" begin
             if N > 1
-                f_slice = slice(f, :x, zero(recursive_bottom_eltype(grid)))
-                @test dimensionality(f_slice) == dimensionality(f) - 1
+                f_slice = selectdim(f, :x, zero(recursive_bottom_eltype(grid)))
+                @test length(propertynames(f_slice)) == N - 1
+                @test dimensionality(f_slice) == N - 1
             end
         end
 
@@ -171,8 +172,9 @@ end
 
         @testset "Sclicing" begin
             t = recursive_bottom_eltype(grid)
-            v_slice = slice(v, :x, zero(t), t(1e-3))
-            @test dimensionality(v_slice) == dimensionality(v) - 1
+            v_slice = selectdim(v, :x, zero(t), ϵ=t(1e-3))
+            @test length(propertynames(v_slice)) == N - 1
+            @test dimensionality(v_slice) == N - 1
         end
 
         @testset "LinearAlgebra" begin
