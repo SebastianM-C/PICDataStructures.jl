@@ -26,6 +26,20 @@ function Base.sort!(::ParticleGrid, f, dim)
     return f
 end
 
+function dir_to_idx(dir::Symbol)
+    if dir === :x
+        1
+    elseif dir === :y
+        2
+    elseif dir === :z
+        3
+    else
+        0
+    end
+end
+
+dir_to_idx(i::Int) = i
+
 getdomain(f::AbstractPICDataStructure) = getfield(f, :grid)
 unwrapdata(f::AbstractPICDataStructure) = getfield(f, :data)
 
