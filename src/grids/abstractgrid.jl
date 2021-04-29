@@ -11,26 +11,13 @@ Base.collect(g::AbstractGrid) = collect(getdomain(g))
 Base.getproperty(g::AbstractGrid, k::Symbol) = getfield(getfield(g, :grid), k)
 Base.propertynames(g::AbstractGrid{N,T,Names}) where {N,T,Names} = Names
 
-function Base.dropdims(grid::AbstractGrid{N}; dims) where N
-    dir = dir_to_idx.(dims)
-    selected_dims = filter(i->i≠dir, Base.OneTo(N))
+function Base.dropdims(grid::AbstractGrid; dims)
+    selected_dims = setdiff(propertynames(grid), dims)
     @debug "Selected grid dims: $selected_dims"
 
-    g = ntuple(N-1) do i
-        grid[selected_dims[i]]
-    end
-    if(any(isempty.(g)))
+    selected = getproperty.((grid,), selected_dims)
+    if(any(isempty.(selected)))
         empty(grid)
     end
-    parameterless_type(grid)(g)
-end
-
-for f in (:minimum, :maximum)
-    @eval begin
-        function (Base.$f)(grid::AbstractAxisGrid{N}) where N
-            ntuple(N) do i
-                $f(getdomain(grid)[i])
-            end
-        end
-    end
+    parameterless_type(grid)(selected...)
 end

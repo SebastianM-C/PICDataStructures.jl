@@ -16,5 +16,12 @@ for ax in (:AxisGrid, :SparseAxisGrid)
     end
 end
 
-# This makes size(field) == size(grid)
-# Base.size(g::AbstractAxisGrid) = map(length, values(getdomain(g)))
+for f in (:minimum, :maximum)
+    @eval begin
+        function (Base.$f)(grid::AbstractAxisGrid{N}) where N
+            ntuple(N) do i
+                $f(getdomain(grid)[i])
+            end
+        end
+    end
+end
