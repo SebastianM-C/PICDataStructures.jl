@@ -25,13 +25,6 @@ function replace_default_names(names, N)
     end
 end
 
-
-function broadcast_grid(f, g::NTuple{N}) where N
-    ntuple(N) do i
-        f.(g[i])
-    end
-end
-
 function broadcast_grid(f, arg, g::NTuple{N}) where N
     ntuple(N) do i
         f.(arg, g[i])
