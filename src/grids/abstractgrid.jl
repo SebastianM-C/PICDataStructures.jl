@@ -6,6 +6,8 @@ Base.iterate(g::AbstractGrid, state...) = iterate(getdomain(g), state...)
 # This makes size(field) == size(grid)
 Base.size(g::AbstractGrid) = map(length, values(getdomain(g)))
 
+Base.collect(g::AbstractGrid) = collect(getdomain(g))
+
 Base.getproperty(g::AbstractGrid, k::Symbol) = getfield(getfield(g, :grid), k)
 Base.propertynames(g::AbstractGrid{N,T,Names}) where {N,T,Names} = Names
 
