@@ -1,4 +1,5 @@
 using PICDataStructures, Test
+using Unitful
 
 @testset "LatticeGrid" begin
     @testset "SparseAxisGrid" begin
@@ -47,11 +48,20 @@ using PICDataStructures, Test
         end
 
         @testset "Units" begin
-            grid = SparseAxisGrid(1u"m":10u"m", 1u"m":10u"m")
-            unitless_grid = SparseAxisGrid(1:10, 1:10, 1:10)
+            grid = SparseAxisGrid(1u"m":1.0u"m":10u"m", 1u"m":0.5u"m":10u"m")
+            unitless_grid = SparseAxisGrid(1:1.0:10, 1:0.5:10)
+
+            u_grid = ustrip(grid)
+            @test u_grid == unitless_grid
+            @test ustrip(u"mm", grid).x[1] == 1000
+            @test propertynames(u_grid) == propertynames(grid)
+
+            grid = SparseAxisGrid(1u"m":2u"m":10u"m", 1u"m":2u"m":10u"m")
+            unitless_grid = SparseAxisGrid(1:2:10, 1:2:10)
 
             @test ustrip(grid) == unitless_grid
             @test ustrip(u"mm", grid).x[1] == 1000
+            @test propertynames(u_grid) == propertynames(grid)
         end
     end
 
