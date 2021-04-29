@@ -4,14 +4,14 @@ using Unitful
 using RecursiveArrayTools: recursive_bottom_eltype
 
 @testset "Scalar field interface" begin
-    grids = SparseAxisGrid.([
-        (0:0.1:1,),
-        (0:0.01:1, 0:0.01:1),
-        (0:0.005:1, 0:0.01:1, 0:0.01:1),
-        (0:0.1:1,).*u"m",
-        (0:0.01:1, 0:0.01:1).*u"m",
-        (0:0.005:1, 0:0.01:1, 0:0.01:1).*u"m",
-    ])
+    grids =
+        SparseAxisGrid(0:0.1:1),
+        SparseAxisGrid(0:0.01:1, 0:0.01:1),
+        SparseAxisGrid(0:0.005:1, 0:0.01:1, 0:0.01:1),
+        SparseAxisGrid(0u"m":0.1u"m":1.0u"m"),
+        SparseAxisGrid(0u"m":0.01u"m":1u"m", 0u"m":0.01u"m":1u"m"),
+        SparseAxisGrid(0u"m":0.005u"m":1u"m", 0u"m":0.01u"m":1u"m", 0u"m":0.01u"m":1u"m")
+
     fields = [
         scalarfield(x->inv(x...), grids[1]),
         scalarfield(grids[2]) do (x,y)
