@@ -1,4 +1,5 @@
 using PICDataStructures, Test
+using PICDataStructures: dimensionality
 using Unitful
 
 @testset "LatticeGrid" begin
@@ -41,9 +42,17 @@ using Unitful
             @test grid2.x == grid.x == 1:10
             @test grid2.y == grid.y == 1:11
 
+            grid = SparseAxisGrid(1:10, 1:11, 1:12)
+            grid2 = dropdims(grid, dims=:y)
+
+            @test dimensionality(grid2) == dimensionality(grid) - 1
+            @test propertynames(grid2) == (:x, :z)
+            @test grid2.x == grid.x == 1:10
+            @test grid2.z == grid.z == 1:12
+
             grid1 = dropdims(grid, dims=(:x,:y))
             @test dimensionality(grid1) == dimensionality(grid) - 2
-            @test propertynames(grid1) == (:x,)
+            @test propertynames(grid1) == (:z,)
             @test grid1.z == grid.z == 1:12
         end
 
