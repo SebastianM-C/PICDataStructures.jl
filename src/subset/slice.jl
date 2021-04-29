@@ -1,5 +1,5 @@
-function location2idx(::LatticeGrid, f, dim, slice_location::Number)
-    m, idx = findmin(map(x->abs(x-slice_location), getdomain(f)[dim]))
+function location2idx(::LatticeGrid, f, dir, slice_location::Number)
+    m, idx = findmin(map(x->abs(x-slice_location), getproperty(getdomain(f), dir)))
     @debug "Closest index to slice location $slice_location is $idx at $m"
 
     return idx
@@ -18,14 +18,13 @@ location2idx(::LatticeGrid, f, dim, idx::AbstractVector) = idx
 location2idx(::ParticleGrid, f, dim, idx::Int) = idx
 location2idx(::ParticleGrid, f, dim, idx::AbstractVector) = idx
 
-function Base.selectdim(f::T, dir::Union{Int,Symbol}, slice_location; kwargs...) where T <: AbstractPICDataStructure
+function Base.selectdim(f::T, dir::Symbol, slice_location; kwargs...) where T <: AbstractPICDataStructure
     @debug "Generic slice fallback for AbstractPICDataStructure"
     selectdim(domain_discretization(T), f, dir, slice_location; kwargs...)
 end
 
 function Base.selectdim(::LatticeGrid, f::T, dir, slice_location) where T
-    dim = dir_to_idx(dir)
-    idx = location2idx(domain_discretization(T), f, dim, slice_location)
+    idx = location2idx(domain_discretization(T), f, dir, slice_location)
     selectdim(scalarness(T), f, dir, idx)
 end
 
