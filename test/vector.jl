@@ -119,8 +119,8 @@ end
 
 @testset "Vector variable interface" begin
     grids = [
-        ParticlePositions((collect(0:0.1:1),collect(0:0.1:1))),
-        ParticlePositions((collect(0:0.1:1).*u"m",collect(0:0.1:1).*u"m"))
+        ParticlePositions(collect.((0:0.1:1,0:0.1:1))...),
+        ParticlePositions(collect.(((0:0.1:1).*u"m",(0:0.1:1).*u"m"))...)
     ]
     scalar_vars = [
         scalarvariable(grids[1]) do (x,y)
