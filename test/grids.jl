@@ -82,18 +82,18 @@ using Unitful
             @test propertynames(grid) == (:x,)
             @test grid.x == collect(1:10)
 
-            grid = AxisGrid(collect(1:10), collect(1:10))
+            grid = AxisGrid(collect.((1:10, 1:10))...)
             @test propertynames(grid) == (:x,:y)
             @test grid.x == collect(1:10)
             @test grid.y == collect(1:10)
 
-            grid = AxisGrid(collect(1:10), collect(1:10), collect(1:10))
+            grid = AxisGrid(collect.((1:10, 1:10, 1:10))...)
             @test propertynames(grid) == (:x,:y,:z)
             @test grid.x == collect(1:10)
             @test grid.y == collect(1:10)
             @test grid.z == collect(1:10)
 
-            grid = AxisGrid(collect(1:10), collect(1:10), collect(1:10), collect(1:10))
+            grid = AxisGrid(collect.((1:10, 1:10, 1:10, 1:10))...)
             @test propertynames(grid) == (:x1,:x2,:x3,:x4)
             @test grid.x1 == collect(1:10)
             @test grid.x2 == collect(1:10)
@@ -149,18 +149,18 @@ end
             @test propertynames(grid) == (:x,)
             @test grid.x == collect(1:10)
 
-            grid = ParticlePositions(collect(1:10), collect(1:10))
+            grid = ParticlePositions(collect.((1:10, 1:10))...)
             @test propertynames(grid) == (:x,:y)
             @test grid.x == collect(1:10)
             @test grid.y == collect(1:10)
 
-            grid = ParticlePositions(collect(1:10), collect(1:10), collect(1:10))
+            grid = ParticlePositions(collect.((1:10, 1:10, 1:10))...)
             @test propertynames(grid) == (:x,:y,:z)
             @test grid.x == collect(1:10)
             @test grid.y == collect(1:10)
             @test grid.z == collect(1:10)
 
-            grid = ParticlePositions(collect(1:10), collect(1:10), collect(1:10), collect(1:10))
+            grid = ParticlePositions(collect.((1:10, 1:10, 1:10, 1:10))...)
             @test propertynames(grid) == (:x1,:x2,:x3,:x4)
             @test grid.x1 == collect(1:10)
             @test grid.x2 == collect(1:10)
