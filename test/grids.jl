@@ -68,6 +68,8 @@ using Unitful
             grid = SparseAxisGrid(1u"m":2u"m":10u"m", 1u"m":2u"m":10u"m")
             unitless_grid = SparseAxisGrid(1:2:10, 1:2:10)
 
+            u_grid = ustrip(grid)
+            @test getdomain(u_grid) == getdomain(unitless_grid)
             @test ustrip(grid) == unitless_grid
             @test ustrip(u"mm", grid).x[1] == 1000
             @test propertynames(u_grid) == propertynames(grid)
