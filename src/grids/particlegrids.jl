@@ -1,15 +1,20 @@
-struct ParticlePositions{N,T,V<:AbstractVector{T},Names} <: AbstractGrid{N,T,Names}
-    grid::NamedTuple{Names,NTuple{N,V}}
+struct ParticlePositions{N,Nm1,T,V<:AbstractVector{T},Names} <: AbstractGrid{N,T,Names}
+    grid::NamedTuple{Names,Tuple{V,Vararg{V,Nm1}}}
     minvals::MVector{N,T}
     maxvals::MVector{N,T}
 end
 
-function ParticlePositions(args::Vararg{T,N}; names=:auto, mins=:auto, maxs=:auto) where {N, T<:AbstractVector}
-    names = replace_default_names(names, N)
-    grid = NamedTuple{names}(args)
+# We need to ensure that we have at least one argument
+function ParticlePositions(firstarg::T, args::Vararg{T,Nm1};
+    names=:auto, mins=:auto, maxs=:auto) where {Nm1, T<:AbstractVector}
 
-    mins = mins == :auto ? MVector(map(minimum, args)) : mins
-    maxs = maxs == :auto ? MVector(map(maximum, args)) : maxs
+    N = Nm1 + 1
+    all_args = (firstarg, args...)
+    names = replace_default_names(names, N)
+    grid = NamedTuple{names}(all_args)
+
+    mins = mins == :auto ? MVector(map(minimum, all_args)) : mins
+    maxs = maxs == :auto ? MVector(map(maximum, all_args)) : maxs
 
     ParticlePositions(grid, mins, maxs)
 end
