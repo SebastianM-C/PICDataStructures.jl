@@ -5,9 +5,10 @@ function location2idx(::LatticeGrid, f, dir, slice_location::Number)
     return idx
 end
 
-function location2idx(::ParticleGrid, f, dim, slice_location::Number; ϵ)
+function location2idx(::ParticleGrid, f, dir, slice_location::Number; ϵ)
     grid = getdomain(f)
-    idxs = filter(i->grid[dim][i] ∈ slice_location ± ϵ, axes(grid[dim], 1))
+    grid_axis = getproperty(grid, dir)
+    idxs = filter(i->grid_axis[i] ∈ slice_location ± ϵ, axes(grid_axis, 1))
     @debug "Found $(length(idxs)) indices close to slice location $slice_location"
 
     return idxs
@@ -29,8 +30,7 @@ function Base.selectdim(::LatticeGrid, f::T, dir, slice_location) where T
 end
 
 function Base.selectdim(::ParticleGrid, f::T, dir, slice_location; ϵ) where T
-    dim = dir_to_idx(dir)
-    idxs = location2idx(domain_discretization(T), f, dim, slice_location; ϵ)
+    idxs = location2idx(domain_discretization(T), f, dir, slice_location; ϵ)
 
     selectdim(scalarness(T), f, dir, idxs)
 end
