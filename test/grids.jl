@@ -77,62 +77,134 @@ using Unitful
     end
 
     @testset "AxisGrid" begin
-        grid = AxisGrid(collect(1:10))
-        @test propertynames(grid) == (:x,)
-        @test grid.x == collect(1:10)
+        @testset "Construction" begin
+            grid = AxisGrid(collect(1:10))
+            @test propertynames(grid) == (:x,)
+            @test grid.x == collect(1:10)
 
-        grid = AxisGrid(collect(1:10), collect(1:10))
-        @test propertynames(grid) == (:x,:y)
-        @test grid.x == collect(1:10)
-        @test grid.y == collect(1:10)
+            grid = AxisGrid(collect(1:10), collect(1:10))
+            @test propertynames(grid) == (:x,:y)
+            @test grid.x == collect(1:10)
+            @test grid.y == collect(1:10)
 
-        grid = AxisGrid(collect(1:10), collect(1:10), collect(1:10))
-        @test propertynames(grid) == (:x,:y,:z)
-        @test grid.x == collect(1:10)
-        @test grid.y == collect(1:10)
-        @test grid.z == collect(1:10)
+            grid = AxisGrid(collect(1:10), collect(1:10), collect(1:10))
+            @test propertynames(grid) == (:x,:y,:z)
+            @test grid.x == collect(1:10)
+            @test grid.y == collect(1:10)
+            @test grid.z == collect(1:10)
 
-        grid = AxisGrid(collect(1:10), collect(1:10), collect(1:10), collect(1:10))
-        @test propertynames(grid) == (:x1,:x2,:x3,:x4)
-        @test grid.x1 == collect(1:10)
-        @test grid.x2 == collect(1:10)
-        @test grid.x3 == collect(1:10)
-        @test grid.x4 == collect(1:10)
+            grid = AxisGrid(collect(1:10), collect(1:10), collect(1:10), collect(1:10))
+            @test propertynames(grid) == (:x1,:x2,:x3,:x4)
+            @test grid.x1 == collect(1:10)
+            @test grid.x2 == collect(1:10)
+            @test grid.x3 == collect(1:10)
+            @test grid.x4 == collect(1:10)
 
-        grid = AxisGrid(collect(1.0:10), collect(0:2π), names=(:r, :θ))
-        @test propertynames(grid) == (:r, :θ)
-        @test grid.r == collect(1.0:10)
-        @test grid.θ == collect(0:2π)
+            grid = AxisGrid(collect(1.0:10), collect(0:2π), names=(:r, :θ))
+            @test propertynames(grid) == (:r, :θ)
+            @test grid.r == collect(1.0:10)
+            @test grid.θ == collect(0:2π)
+        end
+
+        @testset "dropdims" begin
+            grid = AxisGrid(collect.((1:10, 1:11, 1:12))...)
+            grid2 = dropdims(grid, dims=:z)
+
+            @test dimensionality(grid2) == dimensionality(grid) - 1
+            @test propertynames(grid2) == (:x, :y)
+            @test grid2.x == grid.x == collect(1:10)
+            @test grid2.y == grid.y == collect(1:11)
+
+            grid = AxisGrid(collect.((1:10, 1:11, 1:12))...)
+            grid2 = dropdims(grid, dims=:y)
+
+            @test dimensionality(grid2) == dimensionality(grid) - 1
+            @test propertynames(grid2) == (:x, :z)
+            @test grid2.x == grid.x == collect(1:10)
+            @test grid2.z == grid.z == collect(1:12)
+
+            grid1 = dropdims(grid, dims=(:x,:y))
+            @test dimensionality(grid1) == dimensionality(grid) - 2
+            @test propertynames(grid1) == (:z,)
+            @test grid1.z == grid.z == collect(1:12)
+        end
+
+        @testset "Units" begin
+            grid = AxisGrid(collect(1u"m":1u"m":10u"m"), collect(1u"m":1u"m":10u"m"))
+            unitless_grid = AxisGrid(collect(1:10), collect(1:10))
+
+            u_grid = ustrip(grid)
+            @test getdomain(u_grid) == getdomain(unitless_grid)
+            @test u_grid == unitless_grid
+            @test ustrip(u"mm", grid).x[1] == 1000
+            @test propertynames(u_grid) == propertynames(grid)
+        end
     end
 end
 
 @testset "ParticleGrid" begin
     @testset "ParticlePositions" begin
-        grid = ParticlePositions(collect(1:10))
-        @test propertynames(grid) == (:x,)
-        @test grid.x == collect(1:10)
+        @testset "Construction" begin
+            grid = ParticlePositions(collect(1:10))
+            @test propertynames(grid) == (:x,)
+            @test grid.x == collect(1:10)
 
-        grid = ParticlePositions(collect(1:10), collect(1:10))
-        @test propertynames(grid) == (:x,:y)
-        @test grid.x == collect(1:10)
-        @test grid.y == collect(1:10)
+            grid = ParticlePositions(collect(1:10), collect(1:10))
+            @test propertynames(grid) == (:x,:y)
+            @test grid.x == collect(1:10)
+            @test grid.y == collect(1:10)
 
-        grid = ParticlePositions(collect(1:10), collect(1:10), collect(1:10))
-        @test propertynames(grid) == (:x,:y,:z)
-        @test grid.x == collect(1:10)
-        @test grid.y == collect(1:10)
-        @test grid.z == collect(1:10)
+            grid = ParticlePositions(collect(1:10), collect(1:10), collect(1:10))
+            @test propertynames(grid) == (:x,:y,:z)
+            @test grid.x == collect(1:10)
+            @test grid.y == collect(1:10)
+            @test grid.z == collect(1:10)
 
-        grid = ParticlePositions(collect(1:10), collect(1:10), collect(1:10), collect(1:10))
-        @test propertynames(grid) == (:x1,:x2,:x3,:x4)
-        @test grid.x1 == collect(1:10)
-        @test grid.x2 == collect(1:10)
-        @test grid.x3 == collect(1:10)
-        @test grid.x4 == collect(1:10)
+            grid = ParticlePositions(collect(1:10), collect(1:10), collect(1:10), collect(1:10))
+            @test propertynames(grid) == (:x1,:x2,:x3,:x4)
+            @test grid.x1 == collect(1:10)
+            @test grid.x2 == collect(1:10)
+            @test grid.x3 == collect(1:10)
+            @test grid.x4 == collect(1:10)
 
-        grid = ParticlePositions(1.0:10, 0:2π, names=(:r, :θ))
-        @test propertynames(grid) == (:r, :θ)
-        @test grid.r == collect(1.0:10)
-        @test grid.θ == collect(0:2π)
+            grid = ParticlePositions(1.0:10, 0:2π, names=(:r, :θ))
+            @test propertynames(grid) == (:r, :θ)
+            @test grid.r == collect(1.0:10)
+            @test grid.θ == collect(0:2π)
+        end
+
+        @testset "dropdims" begin
+            grid = ParticlePositions(collect.((1:10, 1:11, 1:12))...)
+            grid2 = dropdims(grid, dims=:z)
+
+            @test dimensionality(grid2) == dimensionality(grid) - 1
+            @test propertynames(grid2) == (:x, :y)
+            @test grid2.x == grid.x == collect(1:10)
+            @test grid2.y == grid.y == collect(1:11)
+
+            grid = ParticlePositions(collect.((1:10, 1:11, 1:12))...)
+            grid2 = dropdims(grid, dims=:y)
+
+            @test dimensionality(grid2) == dimensionality(grid) - 1
+            @test propertynames(grid2) == (:x, :z)
+            @test grid2.x == grid.x == collect(1:10)
+            @test grid2.z == grid.z == collect(1:12)
+
+            grid1 = dropdims(grid, dims=(:x,:y))
+            @test dimensionality(grid1) == dimensionality(grid) - 2
+            @test propertynames(grid1) == (:z,)
+            @test grid1.z == grid.z == collect(1:12)
+        end
+
+        @testset "Units" begin
+            grid = ParticlePositions(collect(1u"m":1u"m":10u"m"), collect(1u"m":1u"m":10u"m"))
+            unitless_grid = ParticlePositions(collect(1:10), collect(1:10))
+
+            u_grid = ustrip(grid)
+            @test getdomain(u_grid) == getdomain(unitless_grid)
+            @test u_grid == unitless_grid
+            @test ustrip(u"mm", grid).x[1] == 1000
+            @test propertynames(u_grid) == propertynames(grid)
+        end
     end
 end
