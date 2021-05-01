@@ -25,3 +25,6 @@ for f in (:minimum, :maximum)
         end
     end
 end
+
+# This makes size(field) == size(grid)
+Base.size(g::AbstractAxisGrid) = map(length, values(getdomain(g)))

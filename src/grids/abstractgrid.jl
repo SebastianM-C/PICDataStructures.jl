@@ -3,9 +3,6 @@ Base.eltype(::AbstractGrid{N,T}) where {N,T} = T
 Base.length(g::AbstractGrid) = length(g.grid)
 Base.iterate(g::AbstractGrid, state...) = iterate(getdomain(g), state...)
 
-# This makes size(field) == size(grid)
-Base.size(g::AbstractGrid) = map(length, values(getdomain(g)))
-
 Base.collect(g::AbstractGrid) = collect(getdomain(g))
 
 Base.getproperty(g::AbstractGrid, k::Symbol) = getfield(getfield(g, :grid), k)

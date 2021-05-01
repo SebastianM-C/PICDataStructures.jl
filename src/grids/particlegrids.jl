@@ -69,6 +69,9 @@ function Base.append!(grid::ParticlePositions, new_grid::ParticlePositions)
     return grid
 end
 
+# This makes size(field) == size(grid)
+Base.size(g::ParticlePositions) = (length(first(g)), )
+
 Base.minimum(g::ParticlePositions) = getfield(g, :minvals)
 Base.maximum(g::ParticlePositions) = getfield(g, :maxvals)
 
