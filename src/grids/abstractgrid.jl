@@ -14,7 +14,7 @@ Base.propertynames(g::AbstractGrid{N,T,Names}) where {N,T,Names} = Names
 function Base.dropdims(grid::AbstractGrid; dims)
     dims = dims isa Symbol ? (dims,) : dims
     selected_dims = (setdiff(propertynames(grid),dims)...,)
-    @debug "Selected grid dims: $selected_dims"
+    @debug "Keeping grid dims: $selected_dims"
 
     selected = getproperty.((grid,), selected_dims)
     if(any(isempty.(selected)))
