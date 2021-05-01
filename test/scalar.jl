@@ -83,7 +83,8 @@ using RecursiveArrayTools: recursive_bottom_eltype
 
         @testset "Sclicing" begin
             if N > 1
-                f_slice = selectdim(f, :x, zero(recursive_bottom_eltype(grid)))
+                z = zero(recursive_bottom_eltype(grid))
+                f_slice = selectdim(f, :x, z)
                 @test ndims(f_slice) == N - 1
                 @test dimensionality(f_slice) == N - 1
             end
