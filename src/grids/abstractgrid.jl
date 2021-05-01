@@ -22,3 +22,21 @@ function Base.dropdims(grid::AbstractGrid; dims)
     end
     parameterless_type(grid)(selected...; names=selected_dims)
 end
+
+function Base.hash(g::AbstractGrid, h::UInt)
+    data = getdomain(g)
+    typename = Symbol(typeof(g))
+    hash(data, hash(typename, h))
+end
+
+function Base.:(==)(a::AbstractGrid, b::AbstractGrid)
+    typeof(a) == typeof(b) && getdomain(a) == getdomain(b) && true
+end
+
+function Base.isequal(a::AbstractGrid, b::AbstractGrid)
+    d1 = getdomain(a)
+    d2 = getdomain(b)
+    t1 = typeof(a)
+    t2 = typeof(b)
+    isequal(t1, t2) && isequal(d1, d2) && true
+end
