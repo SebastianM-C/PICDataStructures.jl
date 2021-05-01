@@ -71,6 +71,7 @@ using Unitful
             u_grid = ustrip(grid)
             @test getdomain(u_grid) == getdomain(unitless_grid)
             @test ustrip(grid) == unitless_grid
+            @test hash(u_grid) == hash(unitless_grid)
             @test ustrip(u"mm", grid).x[1] == 1000
             @test propertynames(u_grid) == propertynames(grid)
         end
@@ -136,6 +137,7 @@ using Unitful
             u_grid = ustrip(grid)
             @test getdomain(u_grid) == getdomain(unitless_grid)
             @test u_grid == unitless_grid
+            @test hash(u_grid) == hash(unitless_grid)
             @test ustrip(u"mm", grid).x[1] == 1000
             @test propertynames(u_grid) == propertynames(grid)
         end
@@ -203,8 +205,28 @@ end
             u_grid = ustrip(grid)
             @test getdomain(u_grid) == getdomain(unitless_grid)
             @test u_grid == unitless_grid
+            @test hash(u_grid) == hash(unitless_grid)
             @test ustrip(u"mm", grid).x[1] == 1000
             @test propertynames(u_grid) == propertynames(grid)
         end
     end
+end
+
+@testset "hash" begin
+    axgrid = AxisGrid(collect.((1:10, 1:10))...)
+    pgrid = ParticlePositions(collect.((1:10, 1:10))...)
+
+    @test getdomain(axgrid) == getdomain(pgrid)
+    # Ensure we have differernt hashes even if the contained data is the same
+    @test axgrid ≠ pgrid
+    @test hash(axgrid) ≠ hash(pgrid)
+
+    # Check that the hash changes if we change the internal data
+    h = hash(axgrid)
+    axgrid.x[1] = 2
+    @test hash(axgrid) ≠ h
+
+    h = hash(pgrid)
+    pgrid.x[1] = 2
+    @test hash(pgrid) ≠ h
 end
