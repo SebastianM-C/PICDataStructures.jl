@@ -7,7 +7,7 @@ struct VectorField{N,M,T,D<:AbstractArray{T,M},G<:AbstractAxisGrid} <: AbstractP
     grid::G
 end
 
-struct VectorVariable{N,M,T,D<:AbstractArray{T,M},G<:ParticlePositions} <: AbstractPICDataStructure{T,N,G}
+struct VectorVariable{M,T,D<:AbstractArray{T,M},G<:ParticlePositions} <: AbstractPICDataStructure{T,1,G}
     data::D
     grid::G
 end
@@ -35,8 +35,8 @@ function VectorField(row_data::AbstractArray{T,M}, grid::G, names) where {N, M, 
     VectorField{N}(data, grid)
 end
 
-function VectorVariable(data::D, grid::G) where {N, M, T, D <: AbstractArray{T,M}, G}
-    VectorVariable{1, M, T, D, G}(data, grid)
+function VectorVariable(data::D, grid::G) where {M, T, D <: AbstractArray{T,M}, G}
+    VectorVariable{M, T, D, G}(data, grid)
 end
 
 function vector2nt(f, v::SArray{Tuple{N},T}) where {N,T}

@@ -7,7 +7,7 @@ struct ScalarField{N,T,D<:AbstractArray{T,N},G<:AbstractAxisGrid} <: AbstractPIC
     grid::G
 end
 
-struct ScalarVariable{N,T,D<:AbstractArray{T,N},G<:ParticlePositions} <: AbstractPICDataStructure{T,N,G}
+struct ScalarVariable{T,D<:AbstractVector{T},G<:ParticlePositions} <: AbstractPICDataStructure{T,1,G}
     data::D
     grid::G
 end
