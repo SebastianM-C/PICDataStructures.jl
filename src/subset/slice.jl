@@ -36,9 +36,11 @@ function Base.selectdim(::ParticleGrid, f::T, dir, slice_location; ϵ) where T
 end
 
 function Base.selectdim(::ScalarQuantity, f, dir, idx)
+    @debug "Scalar selectdim along $dir at index $idx"
     dim = dir_to_idx(dir)
+    # TODO: Figure out if we can get rid of dir_to_idx
     data = selectdim(unwrapdata(f), dim, idx)
-    grid = dropdims(getdomain(f), dims=dim)
+    grid = dropdims(getdomain(f), dims=dir)
 
     parameterless_type(f)(data, grid)
 end
