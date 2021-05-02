@@ -2,8 +2,15 @@
 
 ## New features
 - `downsample` with no arguments now computes a heuristic target size based on the type of the input.
+- The grids now have names for the axes. Names can be provided or assigned automatically.
+
 ## Breaking changes
 - `slice` has been replaced by `selectdims` and it now has a more consistent behavior.
+- Grid constructors now take the arguments as `Vararg`s instead of `Tuple`s.
+- The grid axes are now accessed via the name through `getproperty` insted of `getindex`.
+
+## Bug fixes
+- `append!` for `ParticlePositions` now correctly adds precalculated minima and maxima
 
 # Version v0.4.1
 
