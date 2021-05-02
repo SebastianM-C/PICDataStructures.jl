@@ -37,7 +37,7 @@ function AbstractPlotting.convert_arguments(P::Type{<:Contour}, f::ScalarField{3
     convert_arguments(P_fixed, grid..., data)
 end
 
-# function AbstractPlotting.convert_arguments(P::PointBased, g::ParticlePositions)
-#     @debug "PointBased ParticlePositions"
-#     convert_arguments(P, g...)
-# end
+function AbstractPlotting.convert_arguments(P::PointBased, g::ParticlePositions)
+    @debug "PointBased ParticlePositions"
+    convert_arguments(P, g...)
+end
