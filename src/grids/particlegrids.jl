@@ -19,21 +19,14 @@ function ParticlePositions(firstarg::T, args::Vararg{T,Nm1};
     ParticlePositions(grid, mins, maxs)
 end
 
-function ParticlePositions{N,T}() where {N,T}
+function ParticlePositions{N,T}(::UndefInitializer) where {N,T}
     grid = ntuple(N) do i
         T[]
     end
-    mins = zero(MVector{N,T})
-    maxs = zero(MVector{N,T})
+    mins = MVector{N,T}(undef)
+    maxs = MVector{N,T}(undef)
 
-    ParticlePositions(grid, mins, maxs)
-end
-
-@propagate_inbounds function Base.getindex(grid::ParticlePositions{N}, idxs::Vector{Int}) where N
-    g = ntuple(N) do i
-        grid[i][idxs]
-    end
-    ParticlePositions(g)
+    ParticlePositions(grid...; mins, maxs)
 end
 
 function Base.empty!(grid::ParticlePositions{N,T}) where {N,T}
@@ -42,14 +35,18 @@ function Base.empty!(grid::ParticlePositions{N,T}) where {N,T}
     end
     mins = minimum(grid)
     maxs = maximum(grid)
-    mins .= 0
-    maxs .= 0
+    mins .= typemax(T)
+    maxs .= typemin(T)
 
     return grid
 end
 
 function Base.empty(::ParticlePositions{N,T}) where {N,T}
-    ParticlePositions((T[],), mins=zero(MVector{N}), maxs=zero(MVector{N}))
+    undefp = ParticlePositions{N,T}(undef)
+    getfield(undefp, :minvals) .= typemax(T)
+    getfield(undefp, :maxvals) .= typemin(T)
+
+    return undefp
 end
 
 function Base.append!(grid::ParticlePositions, new_grid::ParticlePositions)

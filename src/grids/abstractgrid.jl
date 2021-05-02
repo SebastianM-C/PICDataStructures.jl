@@ -6,7 +6,9 @@ Base.iterate(g::AbstractGrid, state...) = iterate(getdomain(g), state...)
 Base.collect(g::AbstractGrid) = collect(getdomain(g))
 
 Base.getproperty(g::AbstractGrid, k::Symbol) = getfield(getfield(g, :grid), k)
-Base.propertynames(g::AbstractGrid{N,T,Names}) where {N,T,Names} = Names
+Base.propertynames(::AbstractGrid{N,T,Names}) where {N,T,Names} = Names
+
+Base.isempty(g::AbstractGrid) = all(map(isempty, getdomain(g)))
 
 function Base.dropdims(grid::AbstractGrid; dims)
     dims = dims isa Symbol ? (dims,) : dims

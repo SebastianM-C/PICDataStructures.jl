@@ -209,6 +209,16 @@ end
             @test ustrip(u"mm", grid).x[1] == 1000
             @test propertynames(u_grid) == propertynames(grid)
         end
+
+        @testset "empty" begin
+            grid = ParticlePositions(collect.((1:10, 1:10, 1:10))...)
+            grid_copy = deepcopy(grid)
+
+            ge = empty(grid)
+            @test isempty(ge)
+            @test empty!(grid_copy) == ge
+            @test append!(grid_copy, grid) == grid
+        end
     end
 end
 
