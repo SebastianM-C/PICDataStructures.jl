@@ -33,6 +33,15 @@ using Unitful
             @test grid.θ == 0:2π
         end
 
+        @testset "Essentials" begin
+            grid = SparseAxisGrid(1:10, 1:10)
+
+            @test eltype(grid) == Int
+            @test length(grid) == 2
+            @test size(grid) == (10,10)
+            @test iterate(grid) == (grid.x, 2)
+        end
+
         @testset "dropdims" begin
             grid = SparseAxisGrid(1:10, 1:11, 1:12)
             grid2 = dropdims(grid, dims=:z)
@@ -71,6 +80,7 @@ using Unitful
             u_grid = ustrip(grid)
             @test getdomain(u_grid) == getdomain(unitless_grid)
             @test ustrip(grid) == unitless_grid
+            @test isequal(u_grid, unitless_grid)
             @test hash(u_grid) == hash(unitless_grid)
             @test ustrip(u"mm", grid).x[1] == 1000
             @test propertynames(u_grid) == propertynames(grid)
@@ -107,6 +117,15 @@ using Unitful
             @test grid.θ == collect(0:2π)
         end
 
+        @testset "Essentials" begin
+            grid = AxisGrid(collect.((1:10, 1:10))...)
+
+            @test eltype(grid) == Int
+            @test length(grid) == 2
+            @test size(grid) == (10,10)
+            @test iterate(grid) == (grid.x, 2)
+        end
+
         @testset "dropdims" begin
             grid = AxisGrid(collect.((1:10, 1:11, 1:12))...)
             grid2 = dropdims(grid, dims=:z)
@@ -137,6 +156,7 @@ using Unitful
             u_grid = ustrip(grid)
             @test getdomain(u_grid) == getdomain(unitless_grid)
             @test u_grid == unitless_grid
+            @test isequal(u_grid, unitless_grid)
             @test hash(u_grid) == hash(unitless_grid)
             @test ustrip(u"mm", grid).x[1] == 1000
             @test propertynames(u_grid) == propertynames(grid)
@@ -175,6 +195,15 @@ end
             @test grid.θ == collect(0:2π)
         end
 
+        @testset "Essentials" begin
+            grid = ParticlePositions(collect.((1:10, 1:10))...)
+
+            @test eltype(grid) == Int
+            @test length(grid) == 2
+            @test size(grid) == (10,)
+            @test iterate(grid) == (grid.x, 2)
+        end
+
         @testset "dropdims" begin
             grid = ParticlePositions(collect.((1:10, 1:11, 1:12))...)
             grid2 = dropdims(grid, dims=:z)
@@ -205,6 +234,7 @@ end
             u_grid = ustrip(grid)
             @test getdomain(u_grid) == getdomain(unitless_grid)
             @test u_grid == unitless_grid
+            @test isequal(u_grid, unitless_grid)
             @test hash(u_grid) == hash(unitless_grid)
             @test ustrip(u"mm", grid).x[1] == 1000
             @test propertynames(u_grid) == propertynames(grid)
