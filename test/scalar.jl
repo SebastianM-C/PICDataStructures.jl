@@ -105,7 +105,9 @@ end
 @testset "Scalar variable interface" begin
     grids = [
         ParticlePositions(collect.((0:0.1:1,0:0.1:1))...),
-        ParticlePositions(collect.(((0:0.1:1).*u"m",(0:0.1:1).*u"m"))...)
+        ParticlePositions(collect.(((0:0.1:1).*u"m",(0:0.1:1).*u"m"))...),
+        ParticlePositions(collect.((0:0.1:1,0:0.1:1,0:0.1:1))...),
+        ParticlePositions(collect.(((0:0.1:1).*u"m",(0:0.1:1).*u"m",(0:0.1:1).*u"m"))...),
     ]
     vars = [
         scalarvariable(grids[1]) do (x,y)
@@ -113,6 +115,12 @@ end
         end,
         scalarvariable(grids[2]) do (x,y)
             (x^2 + y^2)
+        end,
+        scalarvariable(grids[3]) do (x,y,z)
+            (x^2 + y^2 + z^2)
+        end,
+        scalarvariable(grids[3]) do (x,y,z)
+            (x^2 + y^2 + z^2)
         end,
     ]
 
