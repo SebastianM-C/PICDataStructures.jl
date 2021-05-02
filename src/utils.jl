@@ -33,17 +33,27 @@ function unwrap(f)
     return grid, data
 end
 
-function unwrap(f::Observable)
-    # @debug "unwraping Observable"
-    _f = @lift hasunits($f) ? ustrip($f) : $f
+expandgrid(f::Observable{T}) where T = expandgrid(domain_discretization(T), f)
 
+function expandgrid(::LatticeGrid, f)
     dirs = propertynames(getdomain(f[]))
-    grid = map(dirs) do dir
-        lift(_f) do val_f
+    map(dirs) do dir
+        lift(f) do val_f
             g = getdomain(val_f)
             getproperty(g, dir)
         end
     end
+end
+
+function expandgrid(::ParticleGrid, f)
+    @lift getdomain($f)
+end
+
+function unwrap(f::Observable)
+    # @debug "unwraping Observable"
+    _f = @lift hasunits($f) ? ustrip($f) : $f
+
+    grid = expandgrid(_f)
     data = @lift Float32.(unwrapdata($_f))
 
     return grid, data
