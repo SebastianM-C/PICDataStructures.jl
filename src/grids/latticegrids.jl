@@ -20,7 +20,7 @@ end
 
 function AxisGrid(grid::NamedTuple{Names,Tuple{V,Vararg{V,Nm1}}}) where {T,Nm1,Names,V<:AbstractVector{T}}
     N = Nm1 + 1
-    AxisGrid{N,Nm1,T,V,Names}(grid)
+    AxisGrid{N,T,V,Nm1,Names}(grid)
 end
 
 """
@@ -37,7 +37,7 @@ end
 
 function SparseAxisGrid(grid::NamedTuple{Names,Tuple{R,Vararg{R,Nm1}}}) where {T,Nm1,Names,R<:AbstractRange{T}}
     N = Nm1 + 1
-    SparseAxisGrid{N,Nm1,T,R,Names}(grid)
+    SparseAxisGrid{N,T,R,Nm1,Names}(grid)
 end
 
 # We need to ensure that we have at least one argument. N in Vararg{T,N} can be 0
