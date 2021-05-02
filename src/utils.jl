@@ -34,12 +34,14 @@ function unwrap(f)
 end
 
 function unwrap(f::Observable)
+    # @debug "unwraping Observable"
     _f = @lift hasunits($f) ? ustrip($f) : $f
 
-    N = dimensionality(_f[])
-    grid = ntuple(N) do i
+    dirs = propertynames(getdomain(f[]))
+    grid = map(dirs) do dir
         lift(_f) do val_f
-            getdomain(val_f)[i]
+            g = getdomain(val_f)
+            getproperty(g, dir)
         end
     end
     data = @lift Float32.(unwrapdata($_f))
