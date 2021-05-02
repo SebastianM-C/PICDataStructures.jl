@@ -119,7 +119,7 @@ end
         scalarvariable(grids[3]) do (x,y,z)
             (x^2 + y^2 + z^2)
         end,
-        scalarvariable(grids[3]) do (x,y,z)
+        scalarvariable(grids[4]) do (x,y,z)
             (x^2 + y^2 + z^2)
         end,
     ]
