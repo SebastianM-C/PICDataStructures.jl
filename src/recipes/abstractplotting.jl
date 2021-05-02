@@ -49,6 +49,22 @@ function AbstractPlotting.plot!(sc::ScatterVariable{<:Tuple{ScalarVariable{N,T}}
     return sc
 end
 
+function AbstractPlotting.plot!(sc::FieldPlot{<:Tuple{ScalarField{1}}})
+    f = sc[1]
+
+    grid, data = unwrap(f)
+
+    cl = @lift ustrip(max(abs.(extrema($f))...))
+    valuerange = @lift (-$cl, $cl)
+    replace_automatic!(sc, :colorrange) do
+        valuerange
+    end
+
+    plt = lines!(sc, grid..., data; sc.colorrange, sc.colormap)
+
+    return sc
+end
+
 function AbstractPlotting.plot!(sc::FieldPlot{<:Tuple{ScalarField{2}}})
     f = sc[1]
 
