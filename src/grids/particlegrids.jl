@@ -1,4 +1,4 @@
-struct ParticlePositions{N,Nm1,T,V<:AbstractVector{T},Names} <: AbstractGrid{N,T,Names}
+struct ParticlePositions{N,T,V<:AbstractVector{T},Nm1,Names} <: AbstractGrid{N,T,Names}
     grid::NamedTuple{Names,Tuple{V,Vararg{V,Nm1}}}
     minvals::MVector{N,T}
     maxvals::MVector{N,T}

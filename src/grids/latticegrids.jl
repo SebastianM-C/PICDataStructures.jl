@@ -14,7 +14,7 @@ a structure where the discretization along each axis can be defined
 through an `AbstractVector`. This implies that the discretization step
 along each of the axes is not constant.
 """
-struct AxisGrid{N,Nm1,T,V<:AbstractVector{T},Names} <: AbstractAxisGrid{N,T,Names}
+struct AxisGrid{N,T,V<:AbstractVector{T},Nm1,Names} <: AbstractAxisGrid{N,T,Names}
     grid::NamedTuple{Names,Tuple{V,Vararg{V,Nm1}}}
 end
 
@@ -31,7 +31,7 @@ a regular structure where the discretization along each axis can be defined
 through an `AbstractRange`. This implies that the grid can be defined
 only through the start, stop and step for each axis.
 """
-struct SparseAxisGrid{N,Nm1,T,R<:AbstractRange{T},Names} <: AbstractAxisGrid{N,T,Names}
+struct SparseAxisGrid{N,T,R<:AbstractRange{T},Nm1,Names} <: AbstractAxisGrid{N,T,Names}
     grid::NamedTuple{Names,Tuple{R,Vararg{R,Nm1}}}
 end
 
