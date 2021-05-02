@@ -16,6 +16,14 @@ getdomain(g::AbstractGrid) = getfield(g, :grid)
 getdomain(f::AbstractPICDataStructure) = getfield(f, :grid)
 unwrapdata(f::AbstractPICDataStructure) = getfield(f, :data)
 
+"""
+    axisnames(f::AbstractPICDataStructure; include_units=true)
+
+Get the names of the axis of the grid corresponding to the input data structure `f`.
+In the case of Unitful quantities, they can be excluded by setting `include_units` to `false`.
+"""
+axisnames(f::AbstractPICDataStructure; include_units=true) = axisnames(getdomain(f); include_units)
+
 function unwrap(f)
     _f = hasunits(f) ? ustrip(f) : f
 

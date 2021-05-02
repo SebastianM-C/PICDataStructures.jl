@@ -3,6 +3,7 @@
 ## New features
 - `downsample` with no arguments now computes a heuristic target size based on the type of the input.
 - The grids now have names for the axes. Names can be provided or assigned automatically.
+- `axisnames` can be used to get the names of the axis for an `AbstractGrid` or an `AbstractPICDatastructure` (in which case it will querry the corresponding grid)
 
 ## Breaking changes
 - `slice` has been replaced by `selectdims` and it now has a more consistent behavior.
