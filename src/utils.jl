@@ -54,7 +54,7 @@ function unwrap(f::Observable)
     _f = @lift hasunits($f) ? ustrip($f) : $f
 
     grid = expandgrid(_f)
-    data = @lift Float32.(unwrapdata($_f))
+    data = @lift unwrapdata($_f)
 
     return grid, data
 end
