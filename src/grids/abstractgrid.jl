@@ -1,6 +1,6 @@
 Base.eltype(::AbstractGrid{N,T}) where {N,T} = T
 
-Base.length(g::AbstractGrid) = length(g.grid)
+Base.length(g::AbstractGrid) = length(getdomain(g))
 Base.iterate(g::AbstractGrid, state...) = iterate(getdomain(g), state...)
 
 Base.collect(g::AbstractGrid) = collect(getdomain(g))
