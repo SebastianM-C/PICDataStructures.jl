@@ -27,7 +27,8 @@ end
 
 function AbstractPlotting.convert_arguments(P::Type{<:Contour}, f::ScalarField{3})
     @debug "ScalarField{3} with plot type $P"
-    grid, data = unwrap(f)
+    _f = hasunits(f) ? ustrip(f) : f
+    grid, data = unwrap(_f)
 
     # 3D contour plots need the VolumeLike trait
     # plotting from the recipe creates a Contour{T} where T which defaults to SurfaceLike

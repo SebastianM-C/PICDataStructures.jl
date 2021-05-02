@@ -11,7 +11,8 @@
 - The grid axes are now accessed via the name through `getproperty` insted of `getindex`.
 
 ## Bug fixes
-- `append!` for `ParticlePositions` now correctly adds precalculated minima and maxima
+- `append!` for `ParticlePositions` now correctly adds precalculated minima and maxima.
+- Fix 3D countour plots for `ScalarField`s with unitful input.
 
 # Version v0.4.1
 
