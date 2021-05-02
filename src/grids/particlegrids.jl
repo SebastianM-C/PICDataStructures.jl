@@ -43,8 +43,8 @@ end
 
 function Base.empty(::ParticlePositions{N,T}) where {N,T}
     undefp = ParticlePositions{N,T}(undef)
-    getfield(undefp, :minvals) .= typemax(T)
-    getfield(undefp, :maxvals) .= typemin(T)
+    minimum(undefp) .= typemax(T)
+    maximum(undefp) .= typemin(T)
 
     return undefp
 end
