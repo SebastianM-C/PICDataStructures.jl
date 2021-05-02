@@ -1,6 +1,3 @@
-struct LatticeGrid{N} end
-struct ParticleGrid end
-
 domain_type(::Type{<:AbstractPICDataStructure{T,N,G}}) where {T,N,G} = parameterless_type(G)
 
 function domain_discretization(::Type{<:AbstractPICDataStructure{T,N,G}}) where {T,N,G}

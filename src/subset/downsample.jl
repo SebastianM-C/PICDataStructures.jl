@@ -10,20 +10,16 @@ function resize_data(data::StructArray, target_size...)
     StructArray(map(c->imresize(c, target_size), components(data)))
 end
 
-function ImageTransformations.imresize(g::AbstractAxisGrid{N}, target_size...) where N
-    rg = ntuple(N) do i
-        dim, t = g.grid[i], target_size[i]
-        imresize(dim, t)
-    end
-    AxisGrid(rg)
+function ImageTransformations.imresize(g::AbstractAxisGrid, target_size...)
+    grid_axes = collect(g)
+    resized_axes = (imresize(g, t) for (g,t) in zip(grid_axes, target_size))
+    AxisGrid(resized_axes..., names=propertynames(g))
 end
 
 function ImageTransformations.imresize(g::ParticlePositions, target_size)
-    N = length(g)
-    rg = ntuple(N) do i
-        imresize(g.grid[i], target_size)
-    end
-    ParticlePositions(rg, g.minvals, g.maxvals)
+    grid_axes = collect(g)
+    resized_axes = (imresize(g, target_size) for g in grid_axes)
+    ParticlePositions(resized_axes..., names=propertynames(g))
 end
 
 function approx_target_size(::Type{T}) where T

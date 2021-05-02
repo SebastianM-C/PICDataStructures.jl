@@ -6,14 +6,14 @@ using Unitful
 using StaticArrays
 
 @testset "Vector field interface" begin
-    grids = SparseAxisGrid.([
-        (0.001:0.01:1,),
-        (0.001:0.01:1, 0:0.01:1),
-        (0.001:0.005:1, 0:0.01:1, 0:0.01:1),
-        (0.001:0.01:1,).*u"m",
-        (0.001:0.01:1, 0:0.01:1).*u"m",
-        (0.001:0.005:1, 0:0.01:1, 0:0.01:1).*u"m",
-    ])
+    grids =
+        SparseAxisGrid(0.001:0.01:1),
+        SparseAxisGrid(0.001:0.01:1, 0:0.01:1),
+        SparseAxisGrid(0.001:0.005:1, 0:0.01:1, 0:0.01:1),
+        SparseAxisGrid(0.001u"m":0.01u"m":1u"m"),
+        SparseAxisGrid(0.001u"m":0.01u"m":1u"m", 0u"m":0.01u"m":1u"m"),
+        SparseAxisGrid(0.001u"m":0.005u"m":1u"m", 0u"m":0.01u"m":1u"m", 0u"m":0.01u"m":1u"m")
+
     scalar_fields = [
         scalarfield(x->inv(x...), grids[1]),
         scalarfield(grids[2]) do (x,y)
@@ -119,8 +119,8 @@ end
 
 @testset "Vector variable interface" begin
     grids = [
-        ParticlePositions((collect(0:0.1:1),collect(0:0.1:1))),
-        ParticlePositions((collect(0:0.1:1).*u"m",collect(0:0.1:1).*u"m"))
+        ParticlePositions(collect.((0:0.1:1,0:0.1:1))...),
+        ParticlePositions(collect.(((0:0.1:1).*u"m",(0:0.1:1).*u"m"))...)
     ]
     scalar_vars = [
         scalarvariable(grids[1]) do (x,y)

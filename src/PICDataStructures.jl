@@ -8,7 +8,8 @@ export AbstractPICDataStructure,
     hasunits, unitname,
     downsample,
     scalarness, domain_type, domain_discretization,
-    ScalarQuantity, VectorQuantity, LatticeGrid, ParticleGrid
+    ScalarQuantity, VectorQuantity, LatticeGrid, ParticleGrid,
+    plotdata
 
 # Arrays
 using StaticArrays
@@ -34,15 +35,15 @@ import RecipesBase, UnitfulRecipes
 abstract type AbstractPICDataStructure{T,N,G} <: AbstractArray{T,N} end
 
 include("abstractarray.jl")
-include("grids.jl")
+include("grids/grids.jl")
 include("scalar.jl")
 include("vector.jl")
 include("traits.jl")
 include("units.jl")
 include("algebra.jl")
-include("transformations.jl")
+# include("transformations.jl")
 include("subset/subset.jl")
-include("recipes/abstractplotting.jl")
+# include("recipes/plot.jl")
 include("recipes/recipesbase.jl")
 include("utils.jl")
 include("show.jl")

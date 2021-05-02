@@ -7,7 +7,7 @@ struct VectorField{N,M,T,D<:AbstractArray{T,M},G<:AbstractAxisGrid} <: AbstractP
     grid::G
 end
 
-struct VectorVariable{N,M,T,D<:AbstractArray{T,M},G<:ParticlePositions} <: AbstractPICDataStructure{T,N,G}
+struct VectorVariable{M,T,D<:AbstractArray{T,M},G<:ParticlePositions} <: AbstractPICDataStructure{T,1,G}
     data::D
     grid::G
 end
@@ -35,8 +35,8 @@ function VectorField(row_data::AbstractArray{T,M}, grid::G, names) where {N, M, 
     VectorField{N}(data, grid)
 end
 
-function VectorVariable(data::D, grid::G) where {N, M, T, D <: AbstractArray{T,M}, G}
-    VectorVariable{1, M, T, D, G}(data, grid)
+function VectorVariable(data::D, grid::G) where {M, T, D <: AbstractArray{T,M}, G}
+    VectorVariable{M, T, D, G}(data, grid)
 end
 
 function vector2nt(f, v::SArray{Tuple{N},T}) where {N,T}
@@ -117,7 +117,8 @@ vector_from(::Type{<:ScalarVariable}) = VectorVariable
 scalar_from(::Type{<:VectorField}) = ScalarField
 scalar_from(::Type{<:VectorVariable}) = ScalarVariable
 
-function build_vector(components::NTuple{N, T}, names::NTuple{N, Symbol}) where {N, T}
+# build_vector must be called with at least one component. NTuple{N,T} can have N==0
+function build_vector(components::Tuple{T, Vararg{T,N}}, names::Tuple{Symbol, Vararg{Symbol,N}}) where {N, T}
     # We cannot have StructArrays with ScalarField components because we cannot
     # correctly build them through similar because StructArrays doens't have a
     # similar(::StructArray, ElType)
