@@ -14,7 +14,12 @@ include("typerecipes.jl")
 end
 
 @recipe(ScatterVariable) do scene
-    Attributes(;
+    Attributes(
+        lengthscale_factor = 1,
+        # linewidth_factor = 1,
+        arrowsize_factor = 1;
+        :linewidth => 1,
+        :color => AbstractPlotting.automatic,
         :markersize => 8,
         :strokewidth => 1.0,
         :strokecolor => :black,
@@ -54,6 +59,52 @@ function AbstractPlotting.plot!(sc::ScatterVariable{<:Tuple{ScalarVariable{T}}})
     plt = scatter!(sc, scattergrid;
         color=scattercolor, sc.colorrange, sc.markersize,
         sc.strokewidth, sc.strokecolor, sc.colormap)
+
+    return sc
+end
+
+function AbstractPlotting.plot!(sc::ScatterVariable{<:Tuple{VectorVariable{T}}}) where {T}
+    v = sc[1]
+    grid, data = unwrap(v)
+
+    scattergrid = Node(empty(grid[]))
+
+    arrow_norm = @lift Float32.(vec(norm.(ustrip($v))))
+    maxarrow = @lift maximum(norm.(ustrip($v)))
+
+    arrowsize = @lift $(sc.arrowsize_factor)*$arrow_norm
+    lengthscale = @lift $(sc.lengthscale_factor)/$maxarrow
+    # linewidth = @lift $(sc.linewidth_factor)*$arrow_norm
+    valuerange = @lift extrema($arrow_norm)
+    replace_automatic!(sc, :colorrange) do
+        valuerange
+    end
+
+    function update_plot(grid)
+        empty!(scattergrid[])
+
+        append!(scattergrid[], grid)
+
+        scattergrid[] = scattergrid[]
+    end
+
+    replace_automatic!(sc, :colorrange) do
+        valuerange
+    end
+
+    AbstractPlotting.Observables.on(update_plot, grid)
+
+    update_plot(grid[])
+
+    plt = arrows!(sc, scattergrid;
+        arrowcolor=arrow_norm,
+        arrowsize,
+        linecolor=arrow_norm,
+        lengthscale,
+        sc.linewidth,
+        sc.color,
+        sc.colormap,
+        sc.colorrange)
 
     return sc
 end
