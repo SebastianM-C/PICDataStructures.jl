@@ -14,25 +14,15 @@ function location2idx(::ParticleGrid, f, dir, slice_location::Number; ϵ)
     return idxs
 end
 
-location2idx(::LatticeGrid, f, dim, idx::Int) = idx
-location2idx(::LatticeGrid, f, dim, idx::AbstractVector) = idx
-location2idx(::ParticleGrid, f, dim, idx::Int) = idx
-location2idx(::ParticleGrid, f, dim, idx::AbstractVector) = idx
-
-function Base.selectdim(f::T, dir::Symbol, slice_location; kwargs...) where T <: AbstractPICDataStructure
-    @debug "Generic slice fallback for AbstractPICDataStructure"
-    selectdim(domain_discretization(T), f, dir, slice_location; kwargs...)
+function Base.selectdim(f::T, dir::Symbol, slice_location; kwargs...) where
+        T <: Union{AbstractPICDataStructure, AbstractGrid}
+    @debug "Generic slice fallback for AbstractPICDataStructure and AbstractGrid"
+    idx = location2idx(domain_discretization(T), f, dir, slice_location; kwargs...)
+    selectdim(f, dir, idx; kwargs...)
 end
 
-function Base.selectdim(::LatticeGrid, f::T, dir, slice_location) where T
-    idx = location2idx(domain_discretization(T), f, dir, slice_location)
+function Base.selectdim(f::T, dir::Symbol, idx::Union{Int,AbstractVector}) where T <: AbstractPICDataStructure
     selectdim(scalarness(T), f, dir, idx)
-end
-
-function Base.selectdim(::ParticleGrid, f::T, dir, slice_location; ϵ) where T
-    idxs = location2idx(domain_discretization(T), f, dir, slice_location; ϵ)
-
-    selectdim(scalarness(T), f, dir, idxs)
 end
 
 function Base.selectdim(::ScalarQuantity, f, dir, idx)
@@ -45,12 +35,12 @@ function Base.selectdim(::ScalarQuantity, f, dir, idx)
     parameterless_type(f)(data, grid)
 end
 
-function Base.selectdim(::VectorQuantity, f, dir, idx)
+function Base.selectdim(::VectorQuantity, f, dir, idx::Int)
     dim = dir_to_idx(dir)
     full_data = unwrapdata(f)
     grid = getdomain(f)
 
-    sliced_data = selectdim(full_data, dim, idx)
+    sliced_data = selectdim(full_data, dim, idx:idx)
     f_sliced = parameterless_type(f)(sliced_data, grid)
     f_reduced = dropdims(f_sliced, dims=dir)
 
@@ -60,9 +50,11 @@ end
 Base.dropdims(f::T; dims) where T <: AbstractPICDataStructure = dropdims(scalarness(T), f; dims)
 
 function Base.dropdims(::VectorQuantity, f; dims)
-    selected_dims = filter(c->c≠dims, propertynames(f))
-    @debug "Selected dims: $selected_dims"
-    data = unwrapdata(f)
+    dims = dims isa Symbol ? (dims,) : dims
+    selected_dims = (setdiff(propertynames(f),dims)...,)
+    dim = dir_to_idx.(dims)
+    @debug "Keeping grid dims: $selected_dims"
+    data = dropdims(unwrapdata(f); dims=dim)
 
     selected_data = StructArray(component.((data,), selected_dims), names=selected_dims)
     grid = getdomain(f)
