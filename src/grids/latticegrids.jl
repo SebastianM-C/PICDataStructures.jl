@@ -64,3 +64,13 @@ end
 
 # This makes size(field) == size(grid)
 Base.size(g::AbstractAxisGrid) = map(length, values(getdomain(g)))
+
+function Base.selectdim(g::AbstractAxisGrid, dir::Symbol, idx::Int)
+    grid = getdomain(g)
+    selected_axis = getproperty(g, dir)
+    selection = selectdim(selected_axis, 1, idx:idx)
+
+    new_grid = setindex!!(grid, selection, dir)
+
+    return parameterless_type(g)(new_grid..., names=propertynames(grid))
+end

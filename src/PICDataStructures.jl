@@ -15,6 +15,7 @@ export AbstractPICDataStructure,
 using StaticArrays
 using StructArrays
 using RecursiveArrayTools
+using BangBang
 using ArrayInterface: parameterless_type
 using StructArrays: components, component, similar_structarray
 using Base.Broadcast: Broadcasted, ArrayStyle
