@@ -6,4 +6,5 @@ using Test, SafeTestsets
     @safetestset "Grids" begin include("grids.jl") end
     @safetestset "Scalar quantities" begin include("scalar.jl") end
     @safetestset "Vector quantities" begin include("vector.jl") end
+    @safetestset "Plotting" begin include("plots.jl") end
 end

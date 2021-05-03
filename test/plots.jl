@@ -206,3 +206,78 @@ end
         @test_broken fig.current_axis[].scene[OldAxis][:names, :axisnames][] == ("x ($u)", "y ($u)", "z ($u)")
     end
 end
+
+@testset "Vector variables" begin
+    grids = [
+        ParticlePositions(sin.(0:0.1:2π)),
+        ParticlePositions(sin.(0:0.1:2π),cos.(0:0.1:2π)),
+        ParticlePositions(sin.(0:0.1:2π),cos.(0:0.1:2π),sin.(0:0.1:2π)),
+        ParticlePositions(sin.(0:0.1:2π).*u"m"),
+        ParticlePositions(sin.(0:0.1:2π).*u"m",cos.(0:0.1:2π).*u"m"),
+        ParticlePositions(sin.(0:0.1:2π).*u"m",cos.(0:0.1:2π).*u"m",sin.(0:0.1:2π).*u"m"),
+    ]
+    scalar_vars = [
+        scalarvariable(grids[1]) do (x,)
+            x^2
+        end,
+        scalarvariable(grids[2]) do (x,y)
+            x^2 + y^2
+        end,
+        scalarvariable(grids[3]) do (x,y,z)
+            (x^2 + y^2 + z^2)
+        end,
+        scalarvariable(grids[4]) do (x,)
+            x^2
+        end,
+        scalarvariable(grids[5]) do (x,y)
+            (x^2 + y^2)
+        end,
+        scalarvariable(grids[6]) do (x,y,z)
+            (x^2 + y^2 + z^2)
+        end,
+    ]
+    vars = [
+        build_vector((scalar_vars[1], ), (:x,)),
+        build_vector((scalar_vars[2], scalar_vars[2]), (:x, :y)),
+        build_vector((scalar_vars[3], scalar_vars[3], scalar_vars[3]), (:x, :y, :z)),
+        build_vector((scalar_vars[4], ), (:x,)),
+        build_vector((scalar_vars[5], scalar_vars[5]), (:x, :y)),
+        build_vector((scalar_vars[6], scalar_vars[6], scalar_vars[6]), (:x, :y, :z))
+    ]
+
+    # @testset "Unitless" begin
+    #     # v = vars[1]
+    #     # fig = plotdata(v)
+    #     # @test fig.current_axis[].xlabel[] == "x"
+
+    #     v = vars[2]
+    #     fig = plotdata(v)
+    #     @test fig.current_axis[].xlabel[] == "x"
+    #     @test fig.current_axis[].ylabel[] == "y"
+    #     @test all(fig.content[2].limits[] .≈ (-1,1))
+
+    #     v = vars[3]
+    #     fig = plotdata(v)
+    #     @test fig.current_axis[].scene[OldAxis][:names, :axisnames][] == ("x", "y", "z")
+    # end
+
+    # @testset "Unitful" begin
+    #     # v = vars[4]
+    #     # fig = plotdata(v)
+    #     # u = unitname(getdomain(v))
+    #     # @test u == "m"
+    #     # @test fig.current_axis[].xlabel[] == "x ($u)"
+
+    #     v = vars[5]
+    #     fig = plotdata(v)
+    #     u = unitname(getdomain(v))
+    #     @test u == "m"
+    #     @test fig.current_axis[].xlabel[] == "x ($u)"
+    #     @test fig.current_axis[].ylabel[] == "y ($u)"
+    #     @test all(fig.content[2].limits[] .≈ (-1,1))
+
+    #     v = vars[6]
+    #     fig = plotdata(v)
+    #     @test_broken fig.current_axis[].scene[OldAxis][:names, :axisnames][] == ("x ($u)", "y ($u)", "z ($u)")
+    # end
+end
