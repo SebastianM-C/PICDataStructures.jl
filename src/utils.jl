@@ -16,6 +16,14 @@ getdomain(g::AbstractGrid) = getfield(g, :grid)
 getdomain(f::AbstractPICDataStructure) = getfield(f, :grid)
 unwrapdata(f::AbstractPICDataStructure) = getfield(f, :data)
 
+"""
+    axisnames(f::AbstractPICDataStructure; include_units=true)
+
+Get the names of the axis of the grid corresponding to the input data structure `f`.
+In the case of Unitful quantities, they can be excluded by setting `include_units` to `false`.
+"""
+axisnames(f::AbstractPICDataStructure; include_units=true) = axisnames(getdomain(f); include_units)
+
 function unwrap(f)
     _f = hasunits(f) ? ustrip(f) : f
 
@@ -25,16 +33,28 @@ function unwrap(f)
     return grid, data
 end
 
-function unwrap(f::Observable)
-    _f = @lift hasunits($f) ? ustrip($f) : $f
+expandgrid(f::Observable{T}) where T = expandgrid(domain_discretization(T), f)
 
-    N = dimensionality(_f[])
-    grid = ntuple(N) do i
-        lift(_f) do val_f
-            getdomain(val_f)[i]
+function expandgrid(::LatticeGrid, f)
+    dirs = propertynames(getdomain(f[]))
+    map(dirs) do dir
+        lift(f) do val_f
+            g = getdomain(val_f)
+            getproperty(g, dir)
         end
     end
-    data = @lift Float32.(unwrapdata($_f))
+end
+
+function expandgrid(::ParticleGrid, f)
+    @lift getdomain($f)
+end
+
+function unwrap(f::Observable)
+    # @debug "unwraping Observable"
+    _f = @lift hasunits($f) ? ustrip($f) : $f
+
+    grid = expandgrid(_f)
+    data = @lift unwrapdata($_f)
 
     return grid, data
 end

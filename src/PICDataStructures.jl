@@ -3,7 +3,7 @@ module PICDataStructures
 export AbstractPICDataStructure,
     ScalarField, ScalarVariable, VectorField, VectorVariable,
     AbstractGrid, AbstractAxisGrid, AxisGrid, SparseAxisGrid, ParticlePositions,
-    build_vector, getdomain, mapgrid,
+    build_vector, getdomain, mapgrid, axisnames,
     scalarfield, scalarvariable, vectorfield,
     hasunits, unitname,
     downsample,
@@ -43,7 +43,7 @@ include("units.jl")
 include("algebra.jl")
 # include("transformations.jl")
 include("subset/subset.jl")
-# include("recipes/plot.jl")
+include("recipes/plot.jl")
 include("recipes/recipesbase.jl")
 include("utils.jl")
 include("show.jl")

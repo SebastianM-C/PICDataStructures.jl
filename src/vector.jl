@@ -7,7 +7,7 @@ struct VectorField{N,M,T,D<:AbstractArray{T,M},G<:AbstractAxisGrid} <: AbstractP
     grid::G
 end
 
-struct VectorVariable{M,T,D<:AbstractArray{T,M},G<:ParticlePositions} <: AbstractPICDataStructure{T,1,G}
+struct VectorVariable{T,D<:AbstractVector{T},G<:ParticlePositions} <: AbstractPICDataStructure{T,1,G}
     data::D
     grid::G
 end

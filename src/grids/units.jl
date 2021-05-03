@@ -71,20 +71,25 @@ function _ustrip(x::StepRangeLen)
 end
 
 function Unitful.ustrip(grid::AxisGrid)
+    !hasunits(grid) && return grid
     grid_axes = collect(grid)
     u_grid = map.(ustrip, grid_axes)
+    names = propertynames(grid)
 
-    return AxisGrid(u_grid..., names=propertynames(grid))
+    return AxisGrid(u_grid...; names)
 end
 
 function Unitful.ustrip(grid::SparseAxisGrid)
+    !hasunits(grid) && return grid
     grid_axes = collect(grid)
     u_grid = map(_ustrip, grid_axes)
+    names = propertynames(grid)
 
-    return SparseAxisGrid(u_grid..., names=propertynames(grid))
+    return SparseAxisGrid(u_grid...; names)
 end
 
 function Unitful.ustrip(grid::ParticlePositions)
+    !hasunits(grid) && return grid
     grid_axes = collect(grid)
     u_grid = map.(ustrip, grid_axes)
 

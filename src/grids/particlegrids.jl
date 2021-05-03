@@ -49,10 +49,7 @@ function Base.empty(::ParticlePositions{N,T}) where {N,T}
     return undefp
 end
 
-function Base.append!(grid::ParticlePositions, new_grid::ParticlePositions)
-    for (grid_dir, new_g) in zip(grid, new_grid)
-        append!(grid_dir, new_g)
-    end
+function update_minmax!(grid::ParticlePositions, new_grid::ParticlePositions)
     mins = minimum(grid)
     maxs = maximum(grid)
     new_mins = minimum(new_grid)
@@ -67,6 +64,30 @@ function Base.append!(grid::ParticlePositions, new_grid::ParticlePositions)
             m = nm
         end
     end
+end
+
+function update_minmax!(grid::ParticlePositions, new_grid)
+    mins = minimum(grid)
+    maxs = maximum(grid)
+    new_mins = minimum.(new_grid)
+    new_maxs = maximum.(new_grid)
+    for (m,nm) in zip(mins, new_mins)
+        if nm > m
+            m = nm
+        end
+    end
+    for (m,nm) in zip(maxs, new_maxs)
+        if nm > m
+            m = nm
+        end
+    end
+end
+
+function Base.append!(grid::ParticlePositions, new_grid)
+    for (grid_dir, new_g) in zip(grid, new_grid)
+        append!(grid_dir, new_g)
+    end
+    update_minmax!(grid, new_grid)
 
     return grid
 end

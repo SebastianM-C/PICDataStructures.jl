@@ -99,6 +99,8 @@ using RecursiveArrayTools: recursive_bottom_eltype
         @test fields[1] .* u"V/m" == fields[4]
         @test fields[2] .* u"V/m" == fields[5]
         @test fields[3] .* u"V/m" == fields[6]
+
+        @test ustrip(fields[1]) == fields[1]
     end
 end
 

@@ -7,7 +7,7 @@ include("typerecipes.jl")
         arrowsize_factor = 1;
         :linewidth => 1,
         :color => AbstractPlotting.automatic,
-        :colormap => :jet1,
+        :colormap => :viridis,
         :colorrange => AbstractPlotting.automatic,
         :levels => 6,
     )
@@ -15,19 +15,22 @@ end
 
 @recipe(ScatterVariable) do scene
     Attributes(;
-        :size => 1,
-        # :colormap => :viridis,
+        :markersize => 8,
+        :strokewidth => 1.0,
+        :strokecolor => :black,
+        :colormap => :viridis,
+        :colorrange => AbstractPlotting.automatic
     )
 end
 
-function AbstractPlotting.plot!(sc::ScatterVariable{<:Tuple{ScalarVariable{N,T}}}) where {N,T}
-    f = sc[1]
-    grid = @lift getdomain($f)
-    color = @lift unwrapdata($f)
+function AbstractPlotting.plot!(sc::ScatterVariable{<:Tuple{ScalarVariable{T}}}) where {T}
+    v = sc[1]
+    grid, data = unwrap(v)
 
-    M = dimensionality(grid[])
-    scattergrid = Node(ParticlePositions{M,T}())
+    scattergrid = Node(empty(grid[]))
     scattercolor = Node(Float32[])
+    cl = @lift ustrip(max(abs.(extrema($v))...))
+    valuerange = @lift (-$cl, $cl)
 
     function update_plot(grid, color)
         empty!(scattergrid[])
@@ -40,11 +43,33 @@ function AbstractPlotting.plot!(sc::ScatterVariable{<:Tuple{ScalarVariable{N,T}}
         scattercolor[] = scattercolor[]
     end
 
-    AbstractPlotting.Observables.onany(update_plot, grid, color)
+    replace_automatic!(sc, :colorrange) do
+        valuerange
+    end
 
-    update_plot(grid[], color[])
+    AbstractPlotting.Observables.onany(update_plot, grid, data)
 
-    plt = scatter!(sc, scattergrid, color=:red, markersize=sc.size)
+    update_plot(grid[], data[])
+
+    plt = scatter!(sc, scattergrid;
+        color=scattercolor, sc.colorrange, sc.markersize,
+        sc.strokewidth, sc.strokecolor, sc.colormap)
+
+    return sc
+end
+
+function AbstractPlotting.plot!(sc::FieldPlot{<:Tuple{ScalarField{1}}})
+    f = sc[1]
+
+    grid, data = unwrap(f)
+
+    cl = @lift ustrip(max(abs.(extrema($f))...))
+    valuerange = @lift (-$cl, $cl)
+    replace_automatic!(sc, :colorrange) do
+        valuerange
+    end
+
+    plt = lines!(sc, grid..., data; sc.colorrange, sc.colormap)
 
     return sc
 end

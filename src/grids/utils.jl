@@ -25,8 +25,19 @@ function replace_default_names(names, N)
     end
 end
 
-function broadcast_grid(f, arg, g::NTuple{N}) where N
-    ntuple(N) do i
-        f.(arg, g[i])
+
+"""
+    axisnames(grid::AbstractGrid; include_units=true)
+
+Get the names of the axis of the input `grid`.
+In the case of Unitful quantities, they can be excluded by setting `include_units` to `false`.
+"""
+function axisnames(grid::AbstractGrid; include_units=true)
+    names = string.(propertynames(grid))
+    if include_units && hasunits(grid)
+        units = unitname.(grid)
+        string.(names, (" (",), units, (")",))
+    else
+        names
     end
 end

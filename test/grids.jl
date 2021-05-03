@@ -7,21 +7,25 @@ using Unitful
         @testset "Construction" begin
             grid = SparseAxisGrid(1:10)
             @test propertynames(grid) == (:x,)
+            @test axisnames(grid) == ("x",)
             @test grid.x == 1:10
 
             grid = SparseAxisGrid(1:10, 1:10)
             @test propertynames(grid) == (:x,:y)
+            @test axisnames(grid) == ("x","y")
             @test grid.x == 1:10
             @test grid.y == 1:10
 
             grid = SparseAxisGrid(1:10, 1:10, 1:10)
             @test propertynames(grid) == (:x,:y,:z)
+            @test axisnames(grid) == ("x","y","z")
             @test grid.x == 1:10
             @test grid.y == 1:10
             @test grid.z == 1:10
 
             grid = SparseAxisGrid(1:10, 1:10, 1:10, 1:10)
             @test propertynames(grid) == (:x1,:x2,:x3,:x4)
+            @test axisnames(grid) == ("x1","x2","x3","x4")
             @test grid.x1 == 1:10
             @test grid.x2 == 1:10
             @test grid.x3 == 1:10
@@ -29,6 +33,7 @@ using Unitful
 
             grid = SparseAxisGrid(1.0:10, 0:2π, names=(:r, :θ))
             @test propertynames(grid) == (:r, :θ)
+            @test axisnames(grid) == ("r","θ")
             @test grid.r == 1.0:10
             @test grid.θ == 0:2π
         end
@@ -66,6 +71,15 @@ using Unitful
         end
 
         @testset "Units" begin
+            grid = SparseAxisGrid(1u"m":1.0u"m":10u"m")
+            unitless_grid = SparseAxisGrid(1:1.0:10)
+
+            u_grid = ustrip(grid)
+            @test u_grid == unitless_grid
+            @test ustrip(u"mm", grid).x[1] == 1000
+            @test propertynames(u_grid) == propertynames(grid)
+            @test axisnames(grid) == ["x (m)"]
+
             grid = SparseAxisGrid(1u"m":1.0u"m":10u"m", 1u"m":0.5u"m":10u"m")
             unitless_grid = SparseAxisGrid(1:1.0:10, 1:0.5:10)
 
@@ -73,6 +87,7 @@ using Unitful
             @test u_grid == unitless_grid
             @test ustrip(u"mm", grid).x[1] == 1000
             @test propertynames(u_grid) == propertynames(grid)
+            @test axisnames(grid) == ["x (m)", "y (m)"]
 
             grid = SparseAxisGrid(1u"m":2u"m":10u"m", 1u"m":2u"m":10u"m")
             unitless_grid = SparseAxisGrid(1:2:10, 1:2:10)
@@ -84,6 +99,7 @@ using Unitful
             @test hash(u_grid) == hash(unitless_grid)
             @test ustrip(u"mm", grid).x[1] == 1000
             @test propertynames(u_grid) == propertynames(grid)
+            @test axisnames(grid) == ["x (m)", "y (m)"]
         end
     end
 
