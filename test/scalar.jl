@@ -5,12 +5,12 @@ using RecursiveArrayTools: recursive_bottom_eltype
 
 @testset "Scalar field interface" begin
     grids =
-        SparseAxisGrid(0:0.1:1),
-        SparseAxisGrid(0:0.01:1, 0:0.01:1),
-        SparseAxisGrid(0:0.005:1, 0:0.01:1, 0:0.01:1),
-        SparseAxisGrid(0u"m":0.1u"m":1.0u"m"),
-        SparseAxisGrid(0u"m":0.01u"m":1u"m", 0u"m":0.01u"m":1u"m"),
-        SparseAxisGrid(0u"m":0.005u"m":1u"m", 0u"m":0.01u"m":1u"m", 0u"m":0.01u"m":1u"m")
+        SparseAxisGrid(1:0.1:2),
+        SparseAxisGrid(1:0.01:2, 1:0.01:2),
+        SparseAxisGrid(1:0.005:2, 1:0.01:2, 1:0.01:2),
+        SparseAxisGrid(1u"m":0.1u"m":2.0u"m"),
+        SparseAxisGrid(1u"m":0.01u"m":2u"m", 1u"m":0.01u"m":2u"m"),
+        SparseAxisGrid(1u"m":0.005u"m":2u"m", 1u"m":0.01u"m":2u"m", 1u"m":0.01u"m":2u"m")
 
     fields = [
         scalarfield(x->inv(x...), grids[1]),
@@ -47,8 +47,9 @@ using RecursiveArrayTools: recursive_bottom_eltype
 
         @testset "Indexing" begin
             @test size(f) == size(grid)
-            @test !isfinite(f[1])
-            @test f[end] == oneunit(recursive_bottom_eltype(f)) / √N
+            𝟙 = oneunit(recursive_bottom_eltype(f))
+            @test f[begin] == f[1] == 𝟙 / √N
+            @test f[end] == 𝟙 / √(4*N)
         end
         @testset "Iteration" begin
             @test [fd for fd in f] == collect(f)
