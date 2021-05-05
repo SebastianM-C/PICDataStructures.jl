@@ -58,7 +58,7 @@ using RecursiveArrayTools: recursive_bottom_eltype
             f2 = f .* 2
             @test typeof(f) == typeof(f2)
             @test getdomain(f2) == getdomain(f)
-            @test f[1] == 2*f2[1]
+            @test 2f[1] == f2[1]
         end
 
         @testset "Downsampling" begin
