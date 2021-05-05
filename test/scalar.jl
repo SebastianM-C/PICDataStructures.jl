@@ -81,14 +81,62 @@ using RecursiveArrayTools: recursive_bottom_eltype
                 @test size(f_small) == (5,)
             end
         end
+    end
 
-        @testset "Sclicing" begin
-            if N > 1
-                z = zero(recursive_bottom_eltype(grid))
-                f_slice = selectdim(f, :x, z)
-                @test ndims(f_slice) == N - 1
-                @test dimensionality(f_slice) == N - 1
+    @testset "Sclicing" begin
+        @testset "2D" begin
+            N = 2
+            fi = fields[2]
+            grid = grids[2]
+            f_extra = scalarfield(grid) do (x,y)
+                0.5x - grid.x[1]
             end
+            f = fi + f_extra
+
+            f_slice = selectdim(f, :x, grid.x[1])
+            @test ndims(f_slice) == N - 1
+            @test dimensionality(f_slice) == N - 1
+            @test f[1] == f_slice[1]
+            @test f[1,:] == f_slice
+
+            mid = (grid.y[end] + grid.y[begin])/2
+            f_slice = selectdim(f, :y, mid)
+            @test ndims(f_slice) == N - 1
+            @test dimensionality(f_slice) == N - 1
+            l = length(grid.y)
+            @test f[:,l÷2+1] == f_slice
+
+            f_slice = selectdim(f, :y, grid.y[1])
+            @test ndims(f_slice) == N - 1
+            @test dimensionality(f_slice) == N - 1
+            @test f[:,1] == f_slice
+        end
+        @testset "3D" begin
+            N = 3
+            fi = fields[3]
+            grid = grids[3]
+            f_extra = scalarfield(grid) do (x,y)
+                0.3x - grid.x[1]
+            end
+            f = fi + f_extra
+
+            f_slice = selectdim(f, :x, grid.x[1])
+            @test ndims(f_slice) == N - 1
+            @test dimensionality(f_slice) == N - 1
+            @test f[1] == f_slice[1]
+            @test f[1,:,:] == f_slice
+
+            mid = (grid.y[end] + grid.y[begin])/2
+            f_slice = selectdim(f, :y, mid)
+            @test ndims(f_slice) == N - 1
+            @test dimensionality(f_slice) == N - 1
+            l = length(grid.y)
+            @test f[:,l÷2+1,:] == f_slice
+
+            f_slice = selectdim(f, :z, grid.y[1])
+            @test ndims(f_slice) == N - 1
+            @test dimensionality(f_slice) == N - 1
+            @test f[:,:,1] == f_slice
         end
     end
 
