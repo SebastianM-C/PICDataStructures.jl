@@ -65,9 +65,6 @@ end
 
 function AbstractPlotting.plot!(sc::ScatterVariable{<:Tuple{VectorVariable{T}}}) where {T}
     v = sc[1]
-    grid, data = unwrap(v)
-
-    scattergrid = Node(empty(grid[]))
 
     arrow_norm = @lift Float32.(vec(norm.(ustrip($v))))
     maxarrow = @lift maximum(norm.(ustrip($v)))
@@ -80,23 +77,11 @@ function AbstractPlotting.plot!(sc::ScatterVariable{<:Tuple{VectorVariable{T}}})
         valuerange
     end
 
-    function update_plot(grid)
-        empty!(scattergrid[])
-
-        append!(scattergrid[], grid)
-
-        scattergrid[] = scattergrid[]
-    end
-
     replace_automatic!(sc, :colorrange) do
         valuerange
     end
 
-    AbstractPlotting.Observables.on(update_plot, grid)
-
-    update_plot(grid[])
-
-    plt = arrows!(sc, scattergrid;
+    plt = arrows!(sc, v;
         arrowcolor=arrow_norm,
         arrowsize,
         linecolor=arrow_norm,
