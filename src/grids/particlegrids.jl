@@ -95,14 +95,14 @@ end
 function Base.selectdim(g::ParticlePositions, dir::Symbol, idx)
     grid = getdomain(g)
     # For ParticleGrids we always have the same number of elements on
-    # each axis, so the direction on the slice doesn't matter
-    dir = first(propertynames(g))
-    selected_axis = getproperty(g, dir)
-    selection = selectdim(selected_axis, 1, idx)
+    # each axis, so we have to slice on all dimensions
+    for dir in propertynames(g)
+        selected_axis = getproperty(g, dir)
+        selection = selectdim(selected_axis, 1, idx)
+        grid = setindex!!(grid, selection, dir)
+    end
 
-    new_grid = setindex!!(grid, selection, dir)
-
-    return parameterless_type(g)(new_grid..., names=propertynames(grid))
+    return parameterless_type(g)(grid..., names=propertynames(grid))
 end
 
 # This makes size(field) == size(grid)
