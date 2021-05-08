@@ -42,13 +42,19 @@ end
 
 # We need to ensure that we have at least one argument. N in Vararg{T,N} can be 0
 for ax in (:AxisGrid, :SparseAxisGrid)
-    @eval function $ax(firstarg::T, args::Vararg{T,Nm1}; names=:auto) where {Nm1, T<:AbstractVector}
-        N = Nm1 + 1
-        all_args = (firstarg, args...)
+    @eval begin
+        function $ax(args::Tuple{T,Vararg{T,Nm1}}; names=:auto) where {Nm1, T<:AbstractVector}
+            N = Nm1 + 1
 
-        names = replace_default_names(names, N)
-        g = NamedTuple{names}(all_args)
-        $ax(g)
+            names = replace_default_names(names, N)
+            g = NamedTuple{names}(args)
+            $ax(g)
+        end
+
+        function $ax(firstarg::T, args::Vararg{T,Nm1}; names=:auto) where {Nm1, T<:AbstractVector}
+            all_args = (firstarg, args...)
+            $ax(all_args; names)
+        end
     end
 end
 

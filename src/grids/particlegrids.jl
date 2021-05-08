@@ -8,13 +8,19 @@ end
 function ParticlePositions(firstarg::T, args::Vararg{T,Nm1};
     names=:auto, mins=:auto, maxs=:auto) where {Nm1, T<:AbstractVector}
 
-    N = Nm1 + 1
     all_args = (firstarg, args...)
-    names = replace_default_names(names, N)
-    grid = NamedTuple{names}(all_args)
+    ParticlePositions(all_args; names, mins, maxs)
+end
 
-    mins = mins == :auto ? MVector(map(minimum, all_args)) : mins
-    maxs = maxs == :auto ? MVector(map(maximum, all_args)) : maxs
+function ParticlePositions(args::Tuple{T,Vararg{T,Nm1}};
+    names=:auto, mins=:auto, maxs=:auto) where {Nm1, T<:AbstractVector}
+
+    N = Nm1 + 1
+    names = replace_default_names(names, N)
+    grid = NamedTuple{names}(args)
+
+    mins = mins == :auto ? MVector(map(minimum, args)) : mins
+    maxs = maxs == :auto ? MVector(map(maximum, args)) : maxs
 
     ParticlePositions(grid, mins, maxs)
 end
