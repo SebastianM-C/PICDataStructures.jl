@@ -1,5 +1,5 @@
 using PICDataStructures, Test
-using PICDataStructures: dimensionality, unitname
+using PICDataStructures: dimensionality, unitname, unwrapdata
 using Unitful
 using RecursiveArrayTools: recursive_bottom_eltype
 
@@ -165,13 +165,13 @@ end
             x^2 + y^2
         end,
         scalarvariable(grids[2]) do (x,y)
-            (x^2 + y^2)
+            x^2 + y^2
         end,
         scalarvariable(grids[3]) do (x,y,z)
-            (x^2 + y^2 + z^2)
+            x^2 + y^2 + z^2
         end,
         scalarvariable(grids[4]) do (x,y,z)
-            (x^2 + y^2 + z^2)
+            x^2 + y^2 + z^2
         end,
     ]
 
@@ -202,6 +202,7 @@ end
             v2 = v .* 2
             @test typeof(v) == typeof(v2)
             @test v2.grid == getdomain(v)
+            @test 2v[end] == v2[end]
         end
 
         @testset "Downsampling" begin
@@ -210,11 +211,24 @@ end
             v_small = downsample(v)
             @test all(size(v_small) .≤ size(v))
         end
+    end
 
-        @testset "Sclicing" begin
-            t = recursive_bottom_eltype(grid)
-            f_slice = selectdim(v, :x, zero(t), ϵ=t(1e-3))
-            @test dimensionality(f_slice) == N - 1
+    @testset "Sclicing" begin
+        @testset "2D" begin
+            v = vars[1]
+            v_slice = selectdim(v, :x, 0.0, ϵ=0.1)
+            @test dimensionality(v_slice) == 1
+            @test size(v_slice) == size(getdomain(v_slice))
+            @test length(v_slice) == 2
+            @test v_slice ≈ [0.0, 0.02]
+        end
+        @testset "3D" begin
+            v = vars[3]
+            v_slice = selectdim(v, :x, 0.0, ϵ=0.1)
+            @test dimensionality(v_slice) == 2
+            @test size(v_slice) == size(getdomain(v_slice))
+            @test length(v_slice) == 2
+            @test v_slice ≈ [0.0, 0.03]
         end
     end
 
