@@ -92,6 +92,19 @@ function Base.append!(grid::ParticlePositions, new_grid)
     return grid
 end
 
+function Base.selectdim(g::ParticlePositions, dir::Symbol, idx)
+    grid = getdomain(g)
+    # For ParticleGrids we always have the same number of elements on
+    # each axis, so the direction on the slice doesn't matter
+    dir = first(propertynames(g))
+    selected_axis = getproperty(g, dir)
+    selection = selectdim(selected_axis, 1, idx)
+
+    new_grid = setindex!!(grid, selection, dir)
+
+    return parameterless_type(g)(new_grid..., names=propertynames(grid))
+end
+
 # This makes size(field) == size(grid)
 Base.size(g::ParticlePositions) = (length(first(g)), )
 

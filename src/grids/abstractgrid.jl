@@ -10,6 +10,12 @@ Base.propertynames(::AbstractGrid{N,T,Names}) where {N,T,Names} = Names
 
 Base.isempty(g::AbstractGrid) = all(map(isempty, getdomain(g)))
 
+function Base.selectdim(f::T, dir::Symbol, slice_location; kwargs...) where T<: AbstractGrid
+    @debug "Generic slice fallback for AbstractGrid"
+    idx = location2idx(domain_discretization(T), f, dir, slice_location; kwargs...)
+    selectdim(f, dir, idx)
+end
+
 function Base.dropdims(grid::AbstractGrid; dims)
     dims = dims isa Symbol ? (dims,) : dims
     selected_dims = (setdiff(propertynames(grid),dims)...,)
