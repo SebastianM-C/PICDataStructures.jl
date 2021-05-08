@@ -120,19 +120,29 @@ end
 @testset "Vector variable interface" begin
     grids = [
         ParticlePositions(collect.((0:0.1:1,0:0.1:1))...),
-        ParticlePositions(collect.(((0:0.1:1).*u"m",(0:0.1:1).*u"m"))...)
+        ParticlePositions(collect.(((0:0.1:1).*u"m",(0:0.1:1).*u"m"))...),
+        ParticlePositions(collect.((0:0.1:1,0:0.1:1,0:0.1:1))...),
+        ParticlePositions(collect.(((0:0.1:1).*u"m",(0:0.1:1).*u"m",(0:0.1:1).*u"m"))...),
     ]
     scalar_vars = [
         scalarvariable(grids[1]) do (x,y)
             x^2 + y^2
         end,
         scalarvariable(grids[2]) do (x,y)
-            (x^2 + y^2)
+            x^2 + y^2
+        end,
+        scalarvariable(grids[3]) do (x,y,z)
+            x^2 + y^2 + z^2
+        end,
+        scalarvariable(grids[4]) do (x,y,z)
+            x^2 + y^2 + z^2
         end,
     ]
     vars = [
         build_vector((scalar_vars[1], scalar_vars[1]), (:x, :y)),
-        build_vector((scalar_vars[2], scalar_vars[2]), (:x, :y))
+        build_vector((scalar_vars[2], scalar_vars[2]), (:x, :y)),
+        build_vector((scalar_vars[3], scalar_vars[3], scalar_vars[3]), (:x, :y, :z)),
+        build_vector((scalar_vars[4], scalar_vars[4], scalar_vars[4]), (:x, :y, :z)),
     ]
 
     @testset "$(dimensionality(v))D ($(unitname(v)))" for (grid,f,v) in zip(grids,scalar_vars,vars)
@@ -169,24 +179,36 @@ end
             @test getdomain(v2) == getdomain(v)
         end
 
-         @testset "Downsampling" begin
+        @testset "Downsampling" begin
             v_small = downsample(v, 5)
             @test size(v_small) == (5,)
             v_small = downsample(v)
             @test all(size(v_small) .≤ size(v))
         end
 
-        @testset "Sclicing" begin
-            t = recursive_bottom_eltype(grid)
-            v_slice = selectdim(v, :x, zero(t), ϵ=t(1e-3))
-            @test length(propertynames(v_slice)) == N - 1
-            @test dimensionality(v_slice) == N - 1
-        end
-
         @testset "LinearAlgebra" begin
             nvf = norm.(v)
             @test scalarness(typeof(nvf)) === ScalarQuantity()
             @test norm.(v)[2] == nvf[2]
+        end
+    end
+
+    @testset "Sclicing" begin
+        @testset "2D" begin
+            v = vars[1]
+            v_slice = selectdim(v, :x, 0.0, ϵ=0.1)
+            @test dimensionality(v_slice) == 1
+            @test size(v_slice) == size(getdomain(v_slice))
+            @test length(v_slice) == 2
+            @test v_slice ≈ [0.0, 0.02]
+        end
+        @testset "3D" begin
+            v = vars[3]
+            v_slice = selectdim(v, :x, 0.0, ϵ=0.1)
+            @test dimensionality(v_slice) == 2
+            @test size(v_slice) == size(getdomain(v_slice))
+            @test length(v_slice) == 2
+            @test v_slice ≈ [0.0, 0.03]
         end
     end
 
