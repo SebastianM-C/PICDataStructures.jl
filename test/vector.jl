@@ -119,20 +119,40 @@ end
 
 @testset "Vector variable interface" begin
     grids = [
-        ParticlePositions(collect.((0:0.1:1,0:0.1:1))...),
-        ParticlePositions(collect.(((0:0.1:1).*u"m",(0:0.1:1).*u"m"))...)
+        ParticlePositions(sin.(0:0.1:2π)),
+        ParticlePositions(sin.(0:0.1:2π),cos.(0:0.1:2π)),
+        ParticlePositions(sin.(0:0.1:2π),cos.(0:0.1:2π),sin.(0:0.1:2π)),
+        ParticlePositions(sin.(0:0.1:2π).*u"m"),
+        ParticlePositions(sin.(0:0.1:2π).*u"m",cos.(0:0.1:2π).*u"m"),
+        ParticlePositions(sin.(0:0.1:2π).*u"m",cos.(0:0.1:2π).*u"m",sin.(0:0.1:2π).*u"m"),
     ]
     scalar_vars = [
-        scalarvariable(grids[1]) do (x,y)
-            x^2 + y^2
+        scalarvariable(grids[1]) do (x,)
+            x^2
         end,
         scalarvariable(grids[2]) do (x,y)
-            (x^2 + y^2)
+            (x)/10
+        end,
+        scalarvariable(grids[3]) do (x,y,z)
+            (x^2 + y^2 + z^2)/10
+        end,
+        scalarvariable(grids[4]) do (x,)
+            x^2
+        end,
+        scalarvariable(grids[5]) do (x,y)
+            (x)/10
+        end,
+        scalarvariable(grids[6]) do (x,y,z)
+            (x^2 + y^2 + z^2)/10
         end,
     ]
     vars = [
-        build_vector((scalar_vars[1], scalar_vars[1]), (:x, :y)),
-        build_vector((scalar_vars[2], scalar_vars[2]), (:x, :y))
+        build_vector((scalar_vars[1], ), (:x,)),
+        build_vector((scalar_vars[2], scalar_vars[2]), (:x, :y)),
+        build_vector((scalar_vars[3], scalar_vars[3], scalar_vars[3]), (:x, :y, :z)),
+        build_vector((scalar_vars[4], ), (:x,)),
+        build_vector((scalar_vars[5], scalar_vars[5]), (:x, :y)),
+        build_vector((scalar_vars[6], scalar_vars[6], scalar_vars[6]), (:x, :y, :z))
     ]
 
     @testset "$(dimensionality(v))D ($(unitname(v)))" for (grid,f,v) in zip(grids,scalar_vars,vars)
@@ -169,18 +189,11 @@ end
             @test getdomain(v2) == getdomain(v)
         end
 
-         @testset "Downsampling" begin
+        @testset "Downsampling" begin
             v_small = downsample(v, 5)
             @test size(v_small) == (5,)
             v_small = downsample(v)
             @test all(size(v_small) .≤ size(v))
-        end
-
-        @testset "Sclicing" begin
-            t = recursive_bottom_eltype(grid)
-            v_slice = selectdim(v, :x, zero(t), ϵ=t(1e-3))
-            @test length(propertynames(v_slice)) == N - 1
-            @test dimensionality(v_slice) == N - 1
         end
 
         @testset "LinearAlgebra" begin
@@ -190,11 +203,45 @@ end
         end
     end
 
-    @testset "Units" begin
-        v1 = vars[1]
-        v2 = vars[2]
+    @testset "Sclicing" begin
+        @testset "2D" begin
+            v = vars[2]
+            v_slice = selectdim(v, :x, 0.0, ϵ=0.1)
+            @test dimensionality(v_slice) == 1
+            @test propertynames(v_slice) == (:y,)
+            @test size(v_slice) == size(getdomain(v_slice))
+            @test length(v_slice) == 5
+            @test all(isapprox.(only.(v_slice), 0.0, atol=1e-2))
+            @test propertynames(getdomain(v_slice)) == (:y,)
+            # TODO: make this less fragile
+            @test all(isapprox.(getdomain(v_slice).y[[1,2,5]], 1.0, atol=1e-2))
+            @test all(isapprox.(getdomain(v_slice).y[3:4], -1.0, atol=1e-2))
+        end
+        @testset "3D" begin
+            v = vars[3]
+            v_slice = selectdim(v, :x, 0.0, ϵ=0.1)
+            @test dimensionality(v_slice) == 2
+            @test propertynames(v_slice) == (:y,:z)
+            @test size(v_slice) == size(getdomain(v_slice))
+            @test length(v_slice) == 5
+            @test all(isapprox.(v_slice, ([0.1, 0.1],), atol=1e-2))
+            @test propertynames(getdomain(v_slice)) == (:y,:z)
+            # TODO: make this less fragile
+            @test all(isapprox.(getdomain(v_slice).y[[1,2,5]], 1.0, atol=1e-2))
+            @test all(isapprox.(getdomain(v_slice).y[3:4], -1.0, atol=1e-2))
+            @test count(getdomain(v_slice).z .< 0.0) == 2
+            @test iszero(first(getdomain(v_slice).z))
+        end
+    end
 
-        @test ustrip(v2) == v1
-        @test v1 .* 1u"m^2" == v2
+    @testset "Units" begin
+        @test ustrip(vars[4]) == vars[1]
+        @test vars[1] .* 1u"m^2" == vars[4]
+
+        @test ustrip(vars[5]) == vars[2]
+        @test vars[2] .* 1u"m" == vars[5]
+
+        @test ustrip(vars[6]) == vars[3]
+        @test vars[3] .* 1u"m^2" == vars[6]
     end
 end

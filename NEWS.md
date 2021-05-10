@@ -8,7 +8,6 @@
 
 ## Breaking changes
 - `slice` has been replaced by `selectdims` and it now has a more consistent behavior.
-- Grid constructors now take the arguments as `Vararg`s instead of `Tuple`s.
 - The grid axes are now accessed via the name through `getproperty` insted of `getindex`.
 
 ## Bug fixes

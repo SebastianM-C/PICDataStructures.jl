@@ -1,16 +1,16 @@
 using PICDataStructures, Test
-using PICDataStructures: dimensionality, unitname
+using PICDataStructures: dimensionality, unitname, unwrapdata
 using Unitful
 using RecursiveArrayTools: recursive_bottom_eltype
 
 @testset "Scalar field interface" begin
     grids =
-        SparseAxisGrid(0:0.1:1),
-        SparseAxisGrid(0:0.01:1, 0:0.01:1),
-        SparseAxisGrid(0:0.005:1, 0:0.01:1, 0:0.01:1),
-        SparseAxisGrid(0u"m":0.1u"m":1.0u"m"),
-        SparseAxisGrid(0u"m":0.01u"m":1u"m", 0u"m":0.01u"m":1u"m"),
-        SparseAxisGrid(0u"m":0.005u"m":1u"m", 0u"m":0.01u"m":1u"m", 0u"m":0.01u"m":1u"m")
+        SparseAxisGrid(1:0.1:2),
+        SparseAxisGrid(1:0.01:2, 1:0.01:2),
+        SparseAxisGrid(1:0.005:2, 1:0.01:2, 1:0.01:2),
+        SparseAxisGrid(1u"m":0.1u"m":2.0u"m"),
+        SparseAxisGrid(1u"m":0.01u"m":2u"m", 1u"m":0.01u"m":2u"m"),
+        SparseAxisGrid(1u"m":0.005u"m":2u"m", 1u"m":0.01u"m":2u"m", 1u"m":0.01u"m":2u"m")
 
     fields = [
         scalarfield(x->inv(x...), grids[1]),
@@ -47,8 +47,9 @@ using RecursiveArrayTools: recursive_bottom_eltype
 
         @testset "Indexing" begin
             @test size(f) == size(grid)
-            @test !isfinite(f[1])
-            @test f[end] == oneunit(recursive_bottom_eltype(f)) / √N
+            𝟙 = oneunit(recursive_bottom_eltype(f))
+            @test f[begin] == f[1] == 𝟙 / √N
+            @test f[end] == 𝟙 / √(4*N)
         end
         @testset "Iteration" begin
             @test [fd for fd in f] == collect(f)
@@ -57,7 +58,7 @@ using RecursiveArrayTools: recursive_bottom_eltype
             f2 = f .* 2
             @test typeof(f) == typeof(f2)
             @test getdomain(f2) == getdomain(f)
-            @test f[1] == 2*f2[1]
+            @test 2f[1] == f2[1]
         end
 
         @testset "Downsampling" begin
@@ -80,14 +81,62 @@ using RecursiveArrayTools: recursive_bottom_eltype
                 @test size(f_small) == (5,)
             end
         end
+    end
 
-        @testset "Sclicing" begin
-            if N > 1
-                z = zero(recursive_bottom_eltype(grid))
-                f_slice = selectdim(f, :x, z)
-                @test ndims(f_slice) == N - 1
-                @test dimensionality(f_slice) == N - 1
+    @testset "Sclicing" begin
+        @testset "2D" begin
+            N = 2
+            fi = fields[2]
+            grid = grids[2]
+            f_extra = scalarfield(grid) do (x,y)
+                0.5x - grid.x[1]
             end
+            f = fi + f_extra
+
+            f_slice = selectdim(f, :x, grid.x[1])
+            @test ndims(f_slice) == N - 1
+            @test dimensionality(f_slice) == N - 1
+            @test f[1] == f_slice[1]
+            @test f[1,:] == f_slice
+
+            mid = (grid.y[end] + grid.y[begin])/2
+            f_slice = selectdim(f, :y, mid)
+            @test ndims(f_slice) == N - 1
+            @test dimensionality(f_slice) == N - 1
+            l = length(grid.y)
+            @test f[:,l÷2+1] == f_slice
+
+            f_slice = selectdim(f, :y, grid.y[1])
+            @test ndims(f_slice) == N - 1
+            @test dimensionality(f_slice) == N - 1
+            @test f[:,1] == f_slice
+        end
+        @testset "3D" begin
+            N = 3
+            fi = fields[3]
+            grid = grids[3]
+            f_extra = scalarfield(grid) do (x,y)
+                0.3x - grid.x[1]
+            end
+            f = fi + f_extra
+
+            f_slice = selectdim(f, :x, grid.x[1])
+            @test ndims(f_slice) == N - 1
+            @test dimensionality(f_slice) == N - 1
+            @test f[1] == f_slice[1]
+            @test f[1,:,:] == f_slice
+
+            mid = (grid.y[end] + grid.y[begin])/2
+            f_slice = selectdim(f, :y, mid)
+            @test ndims(f_slice) == N - 1
+            @test dimensionality(f_slice) == N - 1
+            l = length(grid.y)
+            @test f[:,l÷2+1,:] == f_slice
+
+            f_slice = selectdim(f, :z, grid.y[1])
+            @test ndims(f_slice) == N - 1
+            @test dimensionality(f_slice) == N - 1
+            @test f[:,:,1] == f_slice
         end
     end
 
@@ -116,13 +165,13 @@ end
             x^2 + y^2
         end,
         scalarvariable(grids[2]) do (x,y)
-            (x^2 + y^2)
+            x^2 + y^2
         end,
         scalarvariable(grids[3]) do (x,y,z)
-            (x^2 + y^2 + z^2)
+            x^2 + y^2 + z^2
         end,
         scalarvariable(grids[4]) do (x,y,z)
-            (x^2 + y^2 + z^2)
+            x^2 + y^2 + z^2
         end,
     ]
 
@@ -153,6 +202,7 @@ end
             v2 = v .* 2
             @test typeof(v) == typeof(v2)
             @test v2.grid == getdomain(v)
+            @test 2v[end] == v2[end]
         end
 
         @testset "Downsampling" begin
@@ -161,11 +211,24 @@ end
             v_small = downsample(v)
             @test all(size(v_small) .≤ size(v))
         end
+    end
 
-        @testset "Sclicing" begin
-            t = recursive_bottom_eltype(grid)
-            f_slice = selectdim(v, :x, zero(t), ϵ=t(1e-3))
-            @test dimensionality(f_slice) == N - 1
+    @testset "Sclicing" begin
+        @testset "2D" begin
+            v = vars[1]
+            v_slice = selectdim(v, :x, 0.0, ϵ=0.1)
+            @test dimensionality(v_slice) == 1
+            @test size(v_slice) == size(getdomain(v_slice))
+            @test length(v_slice) == 2
+            @test v_slice ≈ [0.0, 0.02]
+        end
+        @testset "3D" begin
+            v = vars[3]
+            v_slice = selectdim(v, :x, 0.0, ϵ=0.1)
+            @test dimensionality(v_slice) == 2
+            @test size(v_slice) == size(getdomain(v_slice))
+            @test length(v_slice) == 2
+            @test v_slice ≈ [0.0, 0.03]
         end
     end
 

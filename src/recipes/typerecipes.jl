@@ -25,6 +25,19 @@ function AbstractPlotting.convert_arguments(P::Type{<:Arrows}, f::VectorField{N}
     convert_arguments(P, origins, arrowheads)
 end
 
+function AbstractPlotting.convert_arguments(P::Type{<:Arrows}, v::VectorVariable)
+    @debug "VectorVariable Arrows"
+    _v = hasunits(v) ? ustrip(v) : v
+    N = dimensionality(v)
+
+    grid = getdomain(_v)
+    data = unwrapdata(_v)
+    origins = mapgrid(Point{N,Float32}, grid)
+    arrowheads = Vec{N,Float32}.(components(data)...)
+
+    convert_arguments(P, origins, arrowheads)
+end
+
 function AbstractPlotting.convert_arguments(P::Type{<:Contour}, f::ScalarField{3})
     @debug "ScalarField{3} with plot type $P"
     _f = hasunits(f) ? ustrip(f) : f

@@ -80,12 +80,13 @@ using Unitful
             @test propertynames(u_grid) == propertynames(grid)
             @test axisnames(grid) == ["x (m)"]
 
-            grid = SparseAxisGrid(1u"m":1.0u"m":10u"m", 1u"m":0.5u"m":10u"m")
-            unitless_grid = SparseAxisGrid(1:1.0:10, 1:0.5:10)
+            grid = SparseAxisGrid(1u"m":1.0u"m":10u"m", -1u"m":0.5u"m":10u"m")
+            unitless_grid = SparseAxisGrid(1:1.0:10, -1:0.5:10)
 
             u_grid = ustrip(grid)
             @test u_grid == unitless_grid
             @test ustrip(u"mm", grid).x[1] == 1000
+            @test ustrip(u"mm", grid).y[1] == -1000
             @test propertynames(u_grid) == propertynames(grid)
             @test axisnames(grid) == ["x (m)", "y (m)"]
 
@@ -166,8 +167,8 @@ using Unitful
         end
 
         @testset "Units" begin
-            grid = AxisGrid(collect(1u"m":1u"m":10u"m"), collect(1u"m":1u"m":10u"m"))
-            unitless_grid = AxisGrid(collect(1:10), collect(1:10))
+            grid = AxisGrid(collect(1u"m":1u"m":10u"m"), collect(-1u"m":1u"m":10u"m"))
+            unitless_grid = AxisGrid(collect(1:10), collect(-1:10))
 
             u_grid = ustrip(grid)
             @test getdomain(u_grid) == getdomain(unitless_grid)
@@ -175,6 +176,7 @@ using Unitful
             @test isequal(u_grid, unitless_grid)
             @test hash(u_grid) == hash(unitless_grid)
             @test ustrip(u"mm", grid).x[1] == 1000
+            @test ustrip(u"mm", grid).y[1] == -1000
             @test propertynames(u_grid) == propertynames(grid)
         end
     end
@@ -244,8 +246,8 @@ end
         end
 
         @testset "Units" begin
-            grid = ParticlePositions(collect(1u"m":1u"m":10u"m"), collect(1u"m":1u"m":10u"m"))
-            unitless_grid = ParticlePositions(collect(1:10), collect(1:10))
+            grid = ParticlePositions(collect(1u"m":1u"m":10u"m"), collect(-1u"m":1u"m":10u"m"))
+            unitless_grid = ParticlePositions(collect(1:10), collect(-1:10))
 
             u_grid = ustrip(grid)
             @test getdomain(u_grid) == getdomain(unitless_grid)
@@ -253,6 +255,7 @@ end
             @test isequal(u_grid, unitless_grid)
             @test hash(u_grid) == hash(unitless_grid)
             @test ustrip(u"mm", grid).x[1] == 1000
+            @test ustrip(u"mm", grid).y[1] == -1000
             @test propertynames(u_grid) == propertynames(grid)
         end
 

@@ -14,28 +14,13 @@ function location2idx(::ParticleGrid, f, dir, slice_location::Number; ϵ)
     return idxs
 end
 
-location2idx(::LatticeGrid, f, dim, idx::Int) = idx
-location2idx(::LatticeGrid, f, dim, idx::AbstractVector) = idx
-location2idx(::ParticleGrid, f, dim, idx::Int) = idx
-location2idx(::ParticleGrid, f, dim, idx::AbstractVector) = idx
-
 function Base.selectdim(f::T, dir::Symbol, slice_location; kwargs...) where T <: AbstractPICDataStructure
     @debug "Generic slice fallback for AbstractPICDataStructure"
-    selectdim(domain_discretization(T), f, dir, slice_location; kwargs...)
+    idx = location2idx(domain_discretization(T), f, dir, slice_location; kwargs...)
+    selectdim(scalarness(T), domain_discretization(T), f, dir, idx)
 end
 
-function Base.selectdim(::LatticeGrid, f::T, dir, slice_location) where T
-    idx = location2idx(domain_discretization(T), f, dir, slice_location)
-    selectdim(scalarness(T), f, dir, idx)
-end
-
-function Base.selectdim(::ParticleGrid, f::T, dir, slice_location; ϵ) where T
-    idxs = location2idx(domain_discretization(T), f, dir, slice_location; ϵ)
-
-    selectdim(scalarness(T), f, dir, idxs)
-end
-
-function Base.selectdim(::ScalarQuantity, f, dir, idx)
+function Base.selectdim(::ScalarQuantity, ::LatticeGrid, f, dir, idx)
     @debug "Scalar selectdim along $dir at index $idx"
     dim = dir_to_idx(dir)
     # TODO: Figure out if we can get rid of dir_to_idx
@@ -45,29 +30,63 @@ function Base.selectdim(::ScalarQuantity, f, dir, idx)
     parameterless_type(f)(data, grid)
 end
 
-function Base.selectdim(::VectorQuantity, f, dir, idx)
+function Base.selectdim(::ScalarQuantity, ::ParticleGrid, f, dir, idx)
+    @debug "Scalar selectdim along $dir at index $idx"
+    dim = dir_to_idx(dir)
+    # TODO: Figure out if we can get rid of dir_to_idx
+    data = selectdim(unwrapdata(f), dim, idx)
+    grid_lower_dim = dropdims(getdomain(f), dims=dir)
+
+    grid = selectdim(grid_lower_dim, dir, idx)
+
+    parameterless_type(f)(data, grid)
+end
+
+function Base.selectdim(::VectorQuantity, ::LatticeGrid, f, dir, idx::Int)
     dim = dir_to_idx(dir)
     full_data = unwrapdata(f)
     grid = getdomain(f)
 
-    sliced_data = selectdim(full_data, dim, idx)
+    sliced_data = selectdim(full_data, dim, idx:idx)
     f_sliced = parameterless_type(f)(sliced_data, grid)
     f_reduced = dropdims(f_sliced, dims=dir)
 
     dropgriddims(f_reduced, dims=dir)
 end
 
+function Base.selectdim(::VectorQuantity, ::ParticleGrid, v, dir, idx)
+    @debug "Vector selectdim along $dir at index $idx"
+    full_data = unwrapdata(v)
+    dim = dir_to_idx(dir)
+
+    grid_lower_dim = dropdims(getdomain(v), dims=dir)
+    grid = selectdim(grid_lower_dim, dir, idx)
+    @debug grid
+    # TODO: Figure out if we can get rid of dir_to_idx
+    sliced_data = selectdim(full_data, dim, idx)
+    @debug sliced_data
+    data = removedims(sliced_data; dims=dir)
+
+    parameterless_type(v)(data, grid)
+end
+
+function removedims(data; dims)
+    dims = dims isa Symbol ? (dims,) : dims
+    selected_dims = (setdiff(propertynames(data),dims)...,)
+    @debug "Keeping grid dims: $selected_dims"
+
+    StructArray(component.((data,), selected_dims), names=selected_dims)
+end
+
 Base.dropdims(f::T; dims) where T <: AbstractPICDataStructure = dropdims(scalarness(T), f; dims)
 
 function Base.dropdims(::VectorQuantity, f; dims)
-    selected_dims = filter(c->c≠dims, propertynames(f))
-    @debug "Selected dims: $selected_dims"
-    data = unwrapdata(f)
-
-    selected_data = StructArray(component.((data,), selected_dims), names=selected_dims)
+    data_rm = removedims(unwrapdata(f); dims)
+    dim = dir_to_idx.(dims)
+    data = dropdims(data_rm; dims=dim)
     grid = getdomain(f)
 
-    parameterless_type(f)(selected_data, grid)
+    parameterless_type(f)(data, grid)
 end
 
 function dropgriddims(f; dims)

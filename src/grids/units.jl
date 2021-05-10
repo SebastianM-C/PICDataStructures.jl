@@ -49,8 +49,10 @@ for (f,u) in zip((:_ustrip, :_uconvert), (:ustrip, :uconvert))
         function $f(u::Units, x::StepRangeLen)
             ref = $f(u, x.ref)
             step = $f(u, x.step)
+            len = x.len
+            offset = x.offset
 
-            StepRangeLen(ref, step, length(x))
+            StepRangeLen(ref, step, len, offset)
         end
     end
 end
@@ -66,8 +68,10 @@ end
 function _ustrip(x::StepRangeLen)
     ref = ustrip(x.ref)
     step = ustrip(x.step)
+    len = x.len
+    offset = x.offset
 
-    StepRangeLen(ref, step, length(x))
+    StepRangeLen(ref, step, len, offset)
 end
 
 function Unitful.ustrip(grid::AxisGrid)
