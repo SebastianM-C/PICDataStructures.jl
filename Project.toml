@@ -21,6 +21,7 @@ UnitfulRecipes = "42071c24-d89e-48dd-8a24-8a12d9b8861f"
 [compat]
 AbstractPlotting = "0.15, 0.16, 0.17, 0.18"
 ArrayInterface = "2.14, 3.0"
+BangBang = "0.3"
 CoordinateTransformations = "0.6"
 ImageTransformations = "0.8"
 IntervalSets = "0.5"
