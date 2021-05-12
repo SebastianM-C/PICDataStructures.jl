@@ -33,12 +33,12 @@ using StaticArrays
         end
     ]
     fields = [
-        build_vector((scalar_fields[1], ), (:x,)),
-        build_vector((scalar_fields[2], scalar_fields[2]), (:x, :y)),
-        build_vector((scalar_fields[3], scalar_fields[3], scalar_fields[3]), (:x, :y, :z)),
-        build_vector((scalar_fields[4], ), (:x,)),
-        build_vector((scalar_fields[5], scalar_fields[5]), (:x, :y)),
-        build_vector((scalar_fields[6], scalar_fields[6], scalar_fields[6]), (:x, :y, :z))
+        build_vector((scalar_fields[1], ), (:x,), name="1D"),
+        build_vector((scalar_fields[2], scalar_fields[2]), (:x, :y), name="2D"),
+        build_vector((scalar_fields[3], scalar_fields[3], scalar_fields[3]), (:x, :y, :z), name="3D"),
+        build_vector((scalar_fields[4], ), (:x,), name="1D"),
+        build_vector((scalar_fields[5], scalar_fields[5]), (:x, :y), name="2D"),
+        build_vector((scalar_fields[6], scalar_fields[6], scalar_fields[6]), (:x, :y, :z), name="3D")
     ]
 
     @testset "$(dimensionality(f))D ($(unitname(f)))" for (grid,s,f) in zip(grids,scalar_fields,fields)
@@ -68,6 +68,7 @@ using StaticArrays
             @test f .* 1 == f
             @test typeof(f2) == typeof(f)
             @test getdomain(f2) == getdomain(f)
+            @test nameof(f2) == nameof(f)
         end
 
         @testset "Downsampling" begin
@@ -85,6 +86,7 @@ using StaticArrays
                 f_small = downsample(f, 5)
                 @test size(f_small) == (5,)
             end
+            @test nameof(f) == nameof(f_small) == "$(N)D"
         end
 
         @testset "Slicing" begin
@@ -92,6 +94,7 @@ using StaticArrays
                 f_slice = selectdim(f, :x, zero(recursive_bottom_eltype(grid)))
                 @test length(propertynames(f_slice)) == N - 1
                 @test dimensionality(f_slice) == N - 1
+                @test nameof(f_slice) == nameof(f)
             end
         end
 
@@ -99,9 +102,13 @@ using StaticArrays
             nvf = norm.(f)
             @test scalarness(typeof(nvf)) === ScalarQuantity()
             @test norm.(f)[2] == nvf[2]
+            # When converting to scalars from vectors we drop the name
+            @test nameof(nvf) == ""
 
             if N == 3
-                @test all(iszero.(f × f))
+                c = f × f
+                @test all(iszero.(c))
+                nameof(c) == "3D × 3D"
             end
         end
     end
@@ -114,6 +121,9 @@ using StaticArrays
         @test fields[1] .* u"V/m" == fields[4]
         @test fields[2] .* u"V/m" == fields[5]
         @test fields[3] .* u"V/m" == fields[6]
+
+        @test ustrip(fields[1]) == fields[1]
+        @test nameof(ustrip(fields[1])) == "1D"
     end
 end
 
@@ -147,12 +157,12 @@ end
         end,
     ]
     vars = [
-        build_vector((scalar_vars[1], ), (:x,)),
-        build_vector((scalar_vars[2], scalar_vars[2]), (:x, :y)),
-        build_vector((scalar_vars[3], scalar_vars[3], scalar_vars[3]), (:x, :y, :z)),
-        build_vector((scalar_vars[4], ), (:x,)),
-        build_vector((scalar_vars[5], scalar_vars[5]), (:x, :y)),
-        build_vector((scalar_vars[6], scalar_vars[6], scalar_vars[6]), (:x, :y, :z))
+        build_vector((scalar_vars[1], ), (:x,), name="1D"),
+        build_vector((scalar_vars[2], scalar_vars[2]), (:x, :y), name="2D"),
+        build_vector((scalar_vars[3], scalar_vars[3], scalar_vars[3]), (:x, :y, :z), name="3D"),
+        build_vector((scalar_vars[4], ), (:x,), name="1D"),
+        build_vector((scalar_vars[5], scalar_vars[5]), (:x, :y), name="2D"),
+        build_vector((scalar_vars[6], scalar_vars[6], scalar_vars[6]), (:x, :y, :z), name="3D")
     ]
 
     @testset "$(dimensionality(v))D ($(unitname(v)))" for (grid,f,v) in zip(grids,scalar_vars,vars)
@@ -187,6 +197,7 @@ end
             @test v .* 1 == v
             @test typeof(v2) == typeof(v)
             @test getdomain(v2) == getdomain(v)
+            @test nameof(v2) == nameof(v)
         end
 
         @testset "Downsampling" begin
@@ -194,12 +205,21 @@ end
             @test size(v_small) == (5,)
             v_small = downsample(v)
             @test all(size(v_small) .≤ size(v))
+            @test nameof(v) == nameof(v_small)
         end
 
         @testset "LinearAlgebra" begin
             nvf = norm.(v)
             @test scalarness(typeof(nvf)) === ScalarQuantity()
             @test norm.(v)[2] == nvf[2]
+            # When converting to scalars from vectors we drop the name
+            @test nameof(nvf) == ""
+
+            if N == 3
+                c = v × v
+                @test all(iszero.(c))
+                nameof(c) == "3D × 3D"
+            end
         end
     end
 
@@ -216,6 +236,8 @@ end
             # TODO: make this less fragile
             @test all(isapprox.(getdomain(v_slice).y[[1,2,5]], 1.0, atol=1e-2))
             @test all(isapprox.(getdomain(v_slice).y[3:4], -1.0, atol=1e-2))
+
+            @test nameof(v) == nameof(v_slice) == "2D"
         end
         @testset "3D" begin
             v = vars[3]
@@ -231,6 +253,8 @@ end
             @test all(isapprox.(getdomain(v_slice).y[3:4], -1.0, atol=1e-2))
             @test count(getdomain(v_slice).z .< 0.0) == 2
             @test iszero(first(getdomain(v_slice).z))
+
+            @test nameof(v) == nameof(v_slice) == "3D"
         end
     end
 
@@ -243,5 +267,7 @@ end
 
         @test ustrip(vars[6]) == vars[3]
         @test vars[3] .* 1u"m^2" == vars[6]
+
+        @test nameof(ustrip(vars[1])) == "1D"
     end
 end
