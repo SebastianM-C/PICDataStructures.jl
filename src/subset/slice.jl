@@ -27,7 +27,7 @@ function Base.selectdim(::ScalarQuantity, ::LatticeGrid, f, dir, idx)
     data = selectdim(unwrapdata(f), dim, idx)
     grid = dropdims(getdomain(f), dims=dir)
 
-    parameterless_type(f)(data, grid)
+    newstruct(f, data, grid)
 end
 
 function Base.selectdim(::ScalarQuantity, ::ParticleGrid, f, dir, idx)
@@ -39,7 +39,7 @@ function Base.selectdim(::ScalarQuantity, ::ParticleGrid, f, dir, idx)
 
     grid = selectdim(grid_lower_dim, dir, idx)
 
-    parameterless_type(f)(data, grid)
+    newstruct(f, data, grid)
 end
 
 function Base.selectdim(::VectorQuantity, ::LatticeGrid, f, dir, idx::Int)
@@ -48,7 +48,7 @@ function Base.selectdim(::VectorQuantity, ::LatticeGrid, f, dir, idx::Int)
     grid = getdomain(f)
 
     sliced_data = selectdim(full_data, dim, idx:idx)
-    f_sliced = parameterless_type(f)(sliced_data, grid)
+    f_sliced = newstruct(f, sliced_data, grid)
     f_reduced = dropdims(f_sliced, dims=dir)
 
     dropgriddims(f_reduced, dims=dir)
@@ -67,7 +67,7 @@ function Base.selectdim(::VectorQuantity, ::ParticleGrid, v, dir, idx)
     @debug sliced_data
     data = removedims(sliced_data; dims=dir)
 
-    parameterless_type(v)(data, grid)
+    newstruct(v, data, grid)
 end
 
 function removedims(data; dims)
@@ -86,7 +86,7 @@ function Base.dropdims(::VectorQuantity, f; dims)
     data = dropdims(data_rm; dims=dim)
     grid = getdomain(f)
 
-    parameterless_type(f)(data, grid)
+    newstruct(f, data, grid)
 end
 
 function dropgriddims(f; dims)
@@ -94,5 +94,5 @@ function dropgriddims(f; dims)
     data = unwrapdata(f)
     sliced_grid = dropdims(grid; dims)
 
-    parameterless_type(f)(data, sliced_grid)
+    newstruct(f, data, sliced_grid)
 end

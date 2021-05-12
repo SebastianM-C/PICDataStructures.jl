@@ -9,5 +9,7 @@ function LinearAlgebra.cross(a::T1, b::T2) where {T1 <: AbstractPICDataStructure
     z_data = @. a.x * b.y - a.y * b.x
 
     data = StructArray((x_data, y_data, z_data); names=propertynames(a))
-    parameterless_type(T1)(data, getdomain(a))
+    grid = getdomain(a)
+    name = nameof(a) * "×" * nameof(b)
+    newstruct(a, data, grid; name)
 end

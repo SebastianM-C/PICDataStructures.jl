@@ -5,26 +5,30 @@ struct VectorQuantity end
 struct VectorField{N,M,T,D<:AbstractArray{T,M},G<:AbstractAxisGrid} <: AbstractPICDataStructure{T,N,G}
     data::D
     grid::G
+    name::String
 end
 
 struct VectorVariable{T,D<:AbstractVector{T},G<:ParticlePositions} <: AbstractPICDataStructure{T,1,G}
     data::D
     grid::G
+    name::String
 end
 
 @inline scalarness(::Type{<:VectorField}) = VectorQuantity()
 @inline scalarness(::Type{<:VectorVariable}) = VectorQuantity()
 
-function VectorField{N}(data::D, grid::G) where {N, M, T, D <: AbstractArray{T,M}, G}
-    VectorField{N, M, T, D, G}(data, grid)
+function VectorField{N}(data::D, grid::G, name) where {N, M, T, D <: AbstractArray{T,M}, G}
+    VectorField{N, M, T, D, G}(data, grid, name)
 end
 
-function VectorField(data::AbstractArray{T,M}, grid::G) where {N, M, P, G, S<:NTuple{N}, T<:NamedTuple{P,S}}
+function VectorField(data::AbstractArray{T,M}, grid::G, name) where {N, M, P, G, S<:NTuple{N}, T<:NamedTuple{P,S}}
     @debug "Array of NamedTuple"
-    VectorField{N}(data, grid)
+    VectorField{N}(data, grid, name)
 end
 
-function VectorField(row_data::AbstractArray{T,M}, grid::G, names) where {N, M, G, T<:SVector{N}}
+VectorField(data, grid; name="") = VectorField(data, grid, name)
+
+function VectorField(row_data::AbstractArray{T,M}, grid::G, names; name="") where {N, M, G, T<:SVector{N}}
     @debug "Building $(N)D VectorField row-wise from $T"
     ElType = NamedTuple{names, NTuple{N,recursive_bottom_eltype(row_data)}}
     @debug "Got ElType $ElType"
@@ -32,12 +36,14 @@ function VectorField(row_data::AbstractArray{T,M}, grid::G, names) where {N, M, 
     for i in eachindex(data, row_data)
         data[i] = vector2nt(data, row_data[i])
     end
-    VectorField{N}(data, grid)
+    VectorField{N}(data, grid, name)
 end
 
-function VectorVariable(data::D, grid::G) where {M, T, D <: AbstractArray{T,M}, G}
-    VectorVariable{M, T, D, G}(data, grid)
+function VectorVariable(data::D, grid::G, name) where {M, T, D <: AbstractArray{T,M}, G}
+    VectorVariable{M, T, D, G}(data, grid, name)
 end
+
+VectorVariable(data, grid; name="") = VectorVariable(data, grid, name)
 
 function vector2nt(f, v::SArray{Tuple{N},T}) where {N,T}
     # @debug "Data type $(typeof(f.data)) and $(typeof(v))"
@@ -68,7 +74,7 @@ function Base.similar(bc::Broadcasted{ArrayStyle{AbstractVectorQuantity}}, ::Typ
     # Keep the same grid for the output
     data = similar_data(unwrapdata(f), ElType, axes(bc))
     @debug "Output data type: $(typeof(data))"
-    parameterless_type(f)(data, grid)
+    newstruct(f, data, grid)
 end
 
 function Base.similar(bc::Broadcasted{ArrayStyle{AbstractVectorQuantity}}, ::Type{ElType}) where ElType <: Number
@@ -98,7 +104,9 @@ end
 
 function Base.similar(::VectorQuantity, f, ::Type{S}, dims::Dims) where S
     # @debug "Building similar VectorQuantity of type $S"
-    parameterless_type(f)(StructArray(similar(unwrapdata(f), S, dims)), getdomain(f))
+    data = StructArray(similar(unwrapdata(f), S, dims))
+    grid = getdomain(f)
+    newstruct(f, data, grid)
 end
 
 # Acessing the internal data storage by column names
@@ -118,7 +126,7 @@ scalar_from(::Type{<:VectorField}) = ScalarField
 scalar_from(::Type{<:VectorVariable}) = ScalarVariable
 
 # build_vector must be called with at least one component. NTuple{N,T} can have N==0
-function build_vector(components::Tuple{T, Vararg{T,N}}, names::Tuple{Symbol, Vararg{Symbol,N}}) where {N, T}
+function build_vector(components::Tuple{T, Vararg{T,N}}, names::Tuple{Symbol, Vararg{Symbol,N}}, name="") where {N, T}
     # We cannot have StructArrays with ScalarField components because we cannot
     # correctly build them through similar because StructArrays doens't have a
     # similar(::StructArray, ElType)
@@ -134,5 +142,5 @@ function build_vector(components::Tuple{T, Vararg{T,N}}, names::Tuple{Symbol, Va
     end
 
     vectortype = vector_from(T)
-    vectortype(data, x.grid)
+    vectortype(data, x.grid; name)
 end

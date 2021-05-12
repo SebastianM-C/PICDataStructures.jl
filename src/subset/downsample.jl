@@ -1,7 +1,7 @@
 function ImageTransformations.imresize(f::AbstractPICDataStructure, target_size::Union{Integer, AbstractUnitRange}...)
     data = resize_data(unwrapdata(f), target_size...)
     grid = imresize(getdomain(f), target_size...)
-    parameterless_type(f)(data, grid)
+    newstruct(f, data, grid)
 end
 
 resize_data(data, target_size...) = imresize(data, target_size...)

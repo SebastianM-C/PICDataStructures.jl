@@ -16,6 +16,13 @@ getdomain(g::AbstractGrid) = getfield(g, :grid)
 getdomain(f::AbstractPICDataStructure) = getfield(f, :grid)
 unwrapdata(f::AbstractPICDataStructure) = getfield(f, :data)
 
+function newstruct(f::AbstractPICDataStructure, data, grid; name=:same)
+    name = name == :same ? nameof(f) : name
+    parameterless_type(f)(data, grid, name)
+end
+
+Base.nameof(f::AbstractPICDataStructure) = getfield(f, :name)
+
 """
     axisnames(f::AbstractPICDataStructure; include_units=true)
 
