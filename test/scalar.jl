@@ -13,20 +13,20 @@ using RecursiveArrayTools: recursive_bottom_eltype
         SparseAxisGrid(1u"m":0.005u"m":2u"m", 1u"m":0.01u"m":2u"m", 1u"m":0.01u"m":2u"m")
 
     fields = [
-        scalarfield(x->inv(x...), grids[1]),
-        scalarfield(grids[2]) do (x,y)
+        scalarfield(x->inv(x...), grids[1], name="1D"),
+        scalarfield(grids[2], name="2D") do (x,y)
             1 / √(x^2 + y^2)
         end,
-        scalarfield(grids[3]) do (x,y,z)
+        scalarfield(grids[3], name="3D") do (x,y,z)
             1 / √(x^2 + y^2 + z^2)
         end,
-        scalarfield(grids[4]) do (x,)
+        scalarfield(grids[4], name="1D") do (x,)
             1u"V" / x
         end,
-        scalarfield(grids[5]) do (x,y)
+        scalarfield(grids[5], name="2D") do (x,y)
             1u"V" / √(x^2 + y^2)
         end,
-        scalarfield(grids[6]) do (x,y,z)
+        scalarfield(grids[6], name="3D") do (x,y,z)
             1u"V" / √(x^2 + y^2 + z^2)
         end
     ]
@@ -59,6 +59,7 @@ using RecursiveArrayTools: recursive_bottom_eltype
             @test typeof(f) == typeof(f2)
             @test getdomain(f2) == getdomain(f)
             @test 2f[1] == f2[1]
+            @test nameof(f) == nameof(f2)
         end
 
         @testset "Downsampling" begin
@@ -80,6 +81,7 @@ using RecursiveArrayTools: recursive_bottom_eltype
                 f_small = downsample(f, 5)
                 @test size(f_small) == (5,)
             end
+            @test nameof(f) == nameof(f_small) == "$(N)D"
         end
     end
 
@@ -110,6 +112,8 @@ using RecursiveArrayTools: recursive_bottom_eltype
             @test ndims(f_slice) == N - 1
             @test dimensionality(f_slice) == N - 1
             @test f[:,1] == f_slice
+
+            @test nameof(f) == nameof(f_slice) == "2D"
         end
         @testset "3D" begin
             N = 3
@@ -137,6 +141,8 @@ using RecursiveArrayTools: recursive_bottom_eltype
             @test ndims(f_slice) == N - 1
             @test dimensionality(f_slice) == N - 1
             @test f[:,:,1] == f_slice
+
+            @test nameof(f) == nameof(f_slice) == "3D"
         end
     end
 
@@ -150,6 +156,7 @@ using RecursiveArrayTools: recursive_bottom_eltype
         @test fields[3] .* u"V/m" == fields[6]
 
         @test ustrip(fields[1]) == fields[1]
+        @test nameof(ustrip(fields[1])) == "1D"
     end
 end
 
@@ -161,16 +168,16 @@ end
         ParticlePositions(collect.(((0:0.1:1).*u"m",(0:0.1:1).*u"m",(0:0.1:1).*u"m"))...),
     ]
     vars = [
-        scalarvariable(grids[1]) do (x,y)
+        scalarvariable(grids[1], name="2D") do (x,y)
             x^2 + y^2
         end,
-        scalarvariable(grids[2]) do (x,y)
+        scalarvariable(grids[2], name="2D") do (x,y)
             x^2 + y^2
         end,
-        scalarvariable(grids[3]) do (x,y,z)
+        scalarvariable(grids[3], name="3D") do (x,y,z)
             x^2 + y^2 + z^2
         end,
-        scalarvariable(grids[4]) do (x,y,z)
+        scalarvariable(grids[4], name="3D") do (x,y,z)
             x^2 + y^2 + z^2
         end,
     ]
@@ -203,13 +210,15 @@ end
             @test typeof(v) == typeof(v2)
             @test v2.grid == getdomain(v)
             @test 2v[end] == v2[end]
+            @test nameof(v2) == nameof(v)
         end
 
         @testset "Downsampling" begin
-            f_small = downsample(v, 5)
-            @test size(f_small) == (5,)
+            v_small = downsample(v, 5)
+            @test size(v_small) == (5,)
             v_small = downsample(v)
             @test all(size(v_small) .≤ size(v))
+            @test nameof(v) == nameof(v_small)
         end
     end
 
@@ -221,6 +230,7 @@ end
             @test size(v_slice) == size(getdomain(v_slice))
             @test length(v_slice) == 2
             @test v_slice ≈ [0.0, 0.02]
+            @test nameof(v) == nameof(v_slice) == "2D"
         end
         @testset "3D" begin
             v = vars[3]
@@ -229,6 +239,7 @@ end
             @test size(v_slice) == size(getdomain(v_slice))
             @test length(v_slice) == 2
             @test v_slice ≈ [0.0, 0.03]
+            @test nameof(v) == nameof(v_slice) == "3D"
         end
     end
 
@@ -238,5 +249,6 @@ end
 
         @test all(ustrip(v_u) .≈ v)
         @test all(v .* 1u"m^2" .≈ v_u)
+        @test nameof(ustrip(v_u)) == nameof(v)
     end
 end
