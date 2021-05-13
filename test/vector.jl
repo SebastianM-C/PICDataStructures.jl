@@ -122,8 +122,19 @@ using StaticArrays
         @test fields[2] .* u"V/m" == fields[5]
         @test fields[3] .* u"V/m" == fields[6]
 
+        @test ustrip(u"V/m", fields[4]) == fields[1]
+        @test ustrip(u"V/m", fields[5]) == fields[2]
+        @test ustrip(u"V/m", fields[6]) == fields[3]
+
+        @test ustrip(u"V/m", u"m", fields[4]) == fields[1]
+        @test ustrip(u"V/m", u"m", fields[5]) == fields[2]
+        @test ustrip(u"V/m", u"m", fields[6]) == fields[3]
+
+
         @test ustrip(fields[1]) == fields[1]
         @test nameof(ustrip(fields[1])) == "1D"
+        @test nameof(ustrip(u"V/m", fields[1])) == "1D"
+        @test nameof(ustrip(u"V/m", u"m", fields[1])) == "1D"
     end
 end
 
