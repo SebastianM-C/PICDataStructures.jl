@@ -166,8 +166,8 @@ using RecursiveArrayTools: recursive_bottom_eltype
         @test ustrip(fields[1]) == fields[1]
         @test nameof(ustrip(fields[1])) == "1D"
 
-        @test nameof(ustrip(u"V/m", fields[1])) == "1D"
-        @test nameof(ustrip(u"V/m", u"m", fields[1])) == "1D"
+        @test nameof(ustrip(u"V/m", fields[4])) == "1D"
+        @test nameof(ustrip(u"V/m", u"m", fields[4])) == "1D"
     end
 end
 
