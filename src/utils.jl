@@ -16,6 +16,13 @@ getdomain(g::AbstractGrid) = getfield(g, :grid)
 getdomain(f::AbstractPICDataStructure) = getfield(f, :grid)
 unwrapdata(f::AbstractPICDataStructure) = getfield(f, :data)
 
+function newstruct(f::AbstractPICDataStructure, data, grid; name=:same)
+    name = name == :same ? nameof(f) : name
+    parameterless_type(f)(data, grid, name)
+end
+
+Base.nameof(f::AbstractPICDataStructure) = getfield(f, :name)
+
 """
     axisnames(f::AbstractPICDataStructure; include_units=true)
 
@@ -74,17 +81,17 @@ end
 
 mapgrid(f, field::AbstractPICDataStructure) = mapgrid(f, getdomain(field))
 
-function scalarfield(f, grid)
+function scalarfield(f, grid; name="")
     data = mapgrid(f, grid)
-    ScalarField(data, grid)
+    ScalarField(data, grid, name)
 end
 
-function scalarvariable(f, grid)
+function scalarvariable(f, grid; name="")
     data = mapgrid(f, grid)
-    ScalarVariable(data, grid)
+    ScalarVariable(data, grid, name)
 end
 
-function vectorfield(f, grid)
+function vectorfield(f, grid; name="")
     data = mapgrid(f, grid)
-    VectorField(data, grid, (:x,:y,:z))
+    VectorField(data, grid, (:x,:y,:z); name)
 end

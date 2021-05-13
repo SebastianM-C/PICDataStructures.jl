@@ -66,8 +66,14 @@ end
 function AbstractPlotting.plot!(sc::ScatterVariable{<:Tuple{VectorVariable{T}}}) where {T}
     v = sc[1]
 
-    arrow_norm = @lift Float32.(vec(norm.(ustrip($v))))
-    maxarrow = @lift maximum(norm.(ustrip($v)))
+    if hasunits(v)
+        _v = @lift ustrip($v)
+    else
+        _v = v
+    end
+
+    arrow_norm = @lift Float32.(vec(norm.($_v)))
+    maxarrow = @lift maximum(norm.($_v))
 
     arrowsize = @lift $(sc.arrowsize_factor)*$arrow_norm
     lengthscale = @lift $(sc.lengthscale_factor)/$maxarrow
@@ -149,8 +155,13 @@ end
 function AbstractPlotting.plot!(sc::FieldPlot{<:Tuple{VectorField{N}}}) where N
     f = sc[1]
 
-    arrow_norm = @lift Float32.(vec(norm.(ustrip($f))))
-    maxarrow = @lift maximum(norm.(ustrip($f)))
+    if hasunits(f)
+        _f = @lift ustrip($f)
+    else
+        _f = f
+    end
+    arrow_norm = @lift Float32.(vec(norm.($_f)))
+    maxarrow = @lift maximum(norm.($_f))
 
     arrowsize = @lift $(sc.arrowsize_factor)*$arrow_norm
     lengthscale = @lift $(sc.lengthscale_factor)/$maxarrow
@@ -160,7 +171,7 @@ function AbstractPlotting.plot!(sc::FieldPlot{<:Tuple{VectorField{N}}}) where N
         valuerange
     end
 
-    plt = arrows!(sc, f;
+    arrows!(sc, f;
         arrowcolor=arrow_norm,
         arrowsize,
         linecolor=arrow_norm,

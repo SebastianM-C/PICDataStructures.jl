@@ -5,7 +5,7 @@ function Unitful.ustrip(f::AbstractPICDataStructure)
     udata = ustrip_data(data)
     ugrid = ustrip(grid)
 
-    parameterless_type(f)(udata, ugrid)
+    newstruct(f, udata, ugrid)
 end
 
 ustrip_data(data) = ustrip.(data)
@@ -21,14 +21,14 @@ for (f, ff) in zip((:uconvert, :ustrip), (:uconvert_data, :ustrip_data))
             data = $ff(u_data, unwrapdata(f))
             grid = getdomain(f)
 
-            parameterless_type(f)(data, grid)
+            newstruct(f, data, grid)
         end
 
         function (Unitful.$f)(u_data::Units, u_grid::Units, f::AbstractPICDataStructure)
             data = $ff(u_data, unwrapdata(f))
             grid = $f(u_grid, getdomain(f))
 
-            parameterless_type(f)(data, grid)
+            newstruct(f, data, grid)
         end
     end
 end
