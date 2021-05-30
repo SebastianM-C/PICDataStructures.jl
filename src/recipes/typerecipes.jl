@@ -1,18 +1,18 @@
-function AbstractPlotting.convert_arguments(P::SurfaceLike, f::ScalarField)
+function Makie.convert_arguments(P::SurfaceLike, f::ScalarField)
     @debug "ScalarField SurfaceLike"
     grid, data = unwrap(f)
 
     convert_arguments(P, grid..., data)
 end
 
-function AbstractPlotting.convert_arguments(P::VolumeLike, f::ScalarField{3})
+function Makie.convert_arguments(P::VolumeLike, f::ScalarField{3})
     @debug "ScalarField VolumeLike"
     grid, data = unwrap(f)
 
     convert_arguments(P, grid..., data)
 end
 
-function AbstractPlotting.convert_arguments(P::Type{<:Arrows}, f::VectorField{N}) where N
+function Makie.convert_arguments(P::Type{<:Arrows}, f::VectorField{N}) where N
     @debug "VectorField Arrows"
     _f = hasunits(f) ? ustrip(f) : f
 
@@ -25,7 +25,7 @@ function AbstractPlotting.convert_arguments(P::Type{<:Arrows}, f::VectorField{N}
     convert_arguments(P, origins, arrowheads)
 end
 
-function AbstractPlotting.convert_arguments(P::Type{<:Arrows}, v::VectorVariable)
+function Makie.convert_arguments(P::Type{<:Arrows}, v::VectorVariable)
     @debug "VectorVariable Arrows"
     _v = hasunits(v) ? ustrip(v) : v
     N = dimensionality(v)
@@ -38,7 +38,7 @@ function AbstractPlotting.convert_arguments(P::Type{<:Arrows}, v::VectorVariable
     convert_arguments(P, origins, arrowheads)
 end
 
-function AbstractPlotting.convert_arguments(P::Type{<:Contour}, f::ScalarField{3})
+function Makie.convert_arguments(P::Type{<:Contour}, f::ScalarField{3})
     @debug "ScalarField{3} with plot type $P"
     _f = hasunits(f) ? ustrip(f) : f
     grid, data = unwrap(_f)
@@ -50,7 +50,7 @@ function AbstractPlotting.convert_arguments(P::Type{<:Contour}, f::ScalarField{3
     convert_arguments(P_fixed, grid..., data)
 end
 
-function AbstractPlotting.convert_arguments(P::PointBased, g::ParticlePositions)
+function Makie.convert_arguments(P::PointBased, g::ParticlePositions)
     @debug "PointBased ParticlePositions"
     convert_arguments(P, g...)
 end

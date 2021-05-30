@@ -6,9 +6,9 @@ include("typerecipes.jl")
         # linewidth_factor = 1,
         arrowsize_factor = 1;
         :linewidth => 1,
-        :color => AbstractPlotting.automatic,
+        :color => Makie.automatic,
         :colormap => :viridis,
-        :colorrange => AbstractPlotting.automatic,
+        :colorrange => Makie.automatic,
         :levels => 6,
     )
 end
@@ -19,16 +19,16 @@ end
         # linewidth_factor = 1,
         arrowsize_factor = 1;
         :linewidth => 1,
-        :color => AbstractPlotting.automatic,
+        :color => Makie.automatic,
         :markersize => 8,
         :strokewidth => 1.0,
         :strokecolor => :black,
         :colormap => :viridis,
-        :colorrange => AbstractPlotting.automatic
+        :colorrange => Makie.automatic
     )
 end
 
-function AbstractPlotting.plot!(sc::ScatterVariable{<:Tuple{ScalarVariable{T}}}) where {T}
+function Makie.plot!(sc::ScatterVariable{<:Tuple{ScalarVariable{T}}}) where {T}
     v = sc[1]
     grid, data = unwrap(v)
 
@@ -52,7 +52,7 @@ function AbstractPlotting.plot!(sc::ScatterVariable{<:Tuple{ScalarVariable{T}}})
         valuerange
     end
 
-    AbstractPlotting.Observables.onany(update_plot, grid, data)
+    Makie.Observables.onany(update_plot, grid, data)
 
     update_plot(grid[], data[])
 
@@ -63,7 +63,7 @@ function AbstractPlotting.plot!(sc::ScatterVariable{<:Tuple{ScalarVariable{T}}})
     return sc
 end
 
-function AbstractPlotting.plot!(sc::ScatterVariable{<:Tuple{VectorVariable{T}}}) where {T}
+function Makie.plot!(sc::ScatterVariable{<:Tuple{VectorVariable{T}}}) where {T}
     v = sc[1]
 
     if hasunits(v)
@@ -100,7 +100,7 @@ function AbstractPlotting.plot!(sc::ScatterVariable{<:Tuple{VectorVariable{T}}})
     return sc
 end
 
-function AbstractPlotting.plot!(sc::FieldPlot{<:Tuple{ScalarField{1}}})
+function Makie.plot!(sc::FieldPlot{<:Tuple{ScalarField{1}}})
     f = sc[1]
 
     grid, data = unwrap(f)
@@ -116,7 +116,7 @@ function AbstractPlotting.plot!(sc::FieldPlot{<:Tuple{ScalarField{1}}})
     return sc
 end
 
-function AbstractPlotting.plot!(sc::FieldPlot{<:Tuple{ScalarField{2}}})
+function Makie.plot!(sc::FieldPlot{<:Tuple{ScalarField{2}}})
     f = sc[1]
 
     grid, data = unwrap(f)
@@ -132,7 +132,7 @@ function AbstractPlotting.plot!(sc::FieldPlot{<:Tuple{ScalarField{2}}})
     return sc
 end
 
-function AbstractPlotting.plot!(sc::FieldPlot{<:Tuple{ScalarField{3}}})
+function Makie.plot!(sc::FieldPlot{<:Tuple{ScalarField{3}}})
     f = sc[1]
 
     cl = @lift ustrip(max(abs.(extrema($f))...))
@@ -152,7 +152,7 @@ function AbstractPlotting.plot!(sc::FieldPlot{<:Tuple{ScalarField{3}}})
     return sc
 end
 
-function AbstractPlotting.plot!(sc::FieldPlot{<:Tuple{VectorField{N}}}) where N
+function Makie.plot!(sc::FieldPlot{<:Tuple{VectorField{N}}}) where N
     f = sc[1]
 
     if hasunits(f)

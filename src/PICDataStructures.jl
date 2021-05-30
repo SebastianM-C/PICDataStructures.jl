@@ -29,8 +29,8 @@ using IntervalSets
 using Unitful
 using Unitful: Units
 # Plotting
-using AbstractPlotting
-using AbstractPlotting: PointBased, SurfaceLike, VolumeLike
+using Makie
+using Makie: PointBased, SurfaceLike, VolumeLike
 import RecipesBase, UnitfulRecipes
 
 abstract type AbstractPICDataStructure{T,N,G} <: AbstractArray{T,N} end
