@@ -19,16 +19,16 @@ end
         # linewidth_factor = 1,
         :arrowsize => 1,
         :linewidth => 1,
-        :color => Makie.Automatic(),
+        :color => MakieCore.Automatic(),
         :markersize => 8,
         :strokewidth => 1.0,
         :strokecolor => :black,
         :colormap => :viridis,
-        :colorrange => Makie.Automatic()
+        :colorrange => MakieCore.Automatic()
     )
 end
 
-function Makie.plot!(sc::ScatterVariable{<:Tuple{ScalarVariable{T}}}) where {T}
+function MakieCore.plot!(sc::ScatterVariable{<:Tuple{ScalarVariable{T}}}) where {T}
     v = sc[1]
     grid, data = unwrap(v)
 
@@ -52,7 +52,7 @@ function Makie.plot!(sc::ScatterVariable{<:Tuple{ScalarVariable{T}}}) where {T}
         valuerange
     end
 
-    Makie.Observables.onany(update_plot, grid, data)
+    onany(update_plot, grid, data)
 
     update_plot(grid[], data[])
 
@@ -63,7 +63,7 @@ function Makie.plot!(sc::ScatterVariable{<:Tuple{ScalarVariable{T}}}) where {T}
     return sc
 end
 
-function Makie.plot!(sc::ScatterVariable{<:Tuple{VectorVariable{T}}}) where {T}
+function MakieCore.plot!(sc::ScatterVariable{<:Tuple{VectorVariable{T}}}) where {T}
     v = sc[1]
 
     if hasunits(v)
@@ -75,7 +75,7 @@ function Makie.plot!(sc::ScatterVariable{<:Tuple{VectorVariable{T}}}) where {T}
     arrow_norm = @lift Float32.(vec(norm.($_v)))
     maxarrow = @lift maximum(norm.($_v))
 
-    arrowsize = @lift $(sc.arrowsize_factor)*$arrow_norm
+    # arrowsize = @lift $(sc.arrowsize_factor)*$arrow_norm
     lengthscale = @lift 1/$maxarrow
     # linewidth = @lift $(sc.linewidth_factor)*$arrow_norm
     valuerange = @lift extrema($arrow_norm)
@@ -89,7 +89,7 @@ function Makie.plot!(sc::ScatterVariable{<:Tuple{VectorVariable{T}}}) where {T}
 
     plt = arrows!(sc, v;
         arrowcolor=arrow_norm,
-        arrowsize,
+        sc.arrowsize,
         linecolor=arrow_norm,
         lengthscale,
         sc.linewidth,
@@ -100,7 +100,7 @@ function Makie.plot!(sc::ScatterVariable{<:Tuple{VectorVariable{T}}}) where {T}
     return sc
 end
 
-function Makie.plot!(sc::FieldPlot{<:Tuple{ScalarField{1}}})
+function MakieCore.plot!(sc::FieldPlot{<:Tuple{ScalarField{1}}})
     f = sc[1]
 
     grid, data = unwrap(f)
@@ -116,7 +116,7 @@ function Makie.plot!(sc::FieldPlot{<:Tuple{ScalarField{1}}})
     return sc
 end
 
-function Makie.plot!(sc::FieldPlot{<:Tuple{ScalarField{2}}})
+function MakieCore.plot!(sc::FieldPlot{<:Tuple{ScalarField{2}}})
     f = sc[1]
 
     grid, data = unwrap(f)
@@ -132,7 +132,7 @@ function Makie.plot!(sc::FieldPlot{<:Tuple{ScalarField{2}}})
     return sc
 end
 
-function Makie.plot!(sc::FieldPlot{<:Tuple{ScalarField{3}}})
+function MakieCore.plot!(sc::FieldPlot{<:Tuple{ScalarField{3}}})
     f = sc[1]
 
     cl = @lift ustrip(max(abs.(extrema($f))...))
@@ -152,7 +152,7 @@ function Makie.plot!(sc::FieldPlot{<:Tuple{ScalarField{3}}})
     return sc
 end
 
-function Makie.plot!(sc::FieldPlot{<:Tuple{VectorField{N}}}) where N
+function MakieCore.plot!(sc::FieldPlot{<:Tuple{VectorField{N}}}) where N
     f = sc[1]
 
     if hasunits(f)
