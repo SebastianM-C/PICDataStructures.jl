@@ -12,7 +12,7 @@ end
 
 function ImageTransformations.imresize(g::AbstractAxisGrid, target_size...)
     grid_axes = collect(g)
-    resized_axes = (imresize(g, t) for (g,t) in zip(grid_axes, target_size))
+    resized_axes = (imresize(collect(g), t) for (g,t) in zip(grid_axes, target_size))
     AxisGrid(resized_axes..., names=propertynames(g))
 end
 
