@@ -30,7 +30,7 @@ using Unitful
 using Unitful: Units
 # Plotting
 # Track what remains to be moved over to MakieCore
-using Makie: @lift, Arrows, Contour
+using Makie: @lift, Arrows, Contour, Figure, Colorbar
 using Observables
 using MakieCore
 using MakieCore: @recipe, Attributes,
