@@ -1,14 +1,14 @@
 include("typerecipes.jl")
 
 @recipe(FieldPlot) do scene
-    Attributes(
-        lengthscale_factor = 1,
+    Attributes(;
+        :lengthscale => 1.0f0,
         # linewidth_factor = 1,
-        arrowsize_factor = 1;
-        :linewidth => 1,
-        :color => Makie.automatic,
+        :arrowsize => Makie.Automatic(),
+        :linewidth => Makie.Automatic(),
+        :color => Makie.Automatic(),
         :colormap => :viridis,
-        :colorrange => Makie.automatic,
+        :colorrange => Makie.Automatic(),
         :levels => 6,
     )
 end
@@ -17,14 +17,14 @@ end
     Attributes(
         lengthscale_factor = 1,
         # linewidth_factor = 1,
-        arrowsize_factor = 1;
+        :arrowsize => 1;
         :linewidth => 1,
-        :color => Makie.automatic,
+        :color => Makie.Automatic(),
         :markersize => 8,
         :strokewidth => 1.0,
         :strokecolor => :black,
         :colormap => :viridis,
-        :colorrange => Makie.automatic
+        :colorrange => Makie.Automatic()
     )
 end
 
@@ -160,23 +160,24 @@ function Makie.plot!(sc::FieldPlot{<:Tuple{VectorField{N}}}) where N
     else
         _f = f
     end
-    arrow_norm = @lift Float32.(vec(norm.($_f)))
-    maxarrow = @lift maximum(norm.($_f))
 
-    arrowsize = @lift $(sc.arrowsize_factor)*$arrow_norm
-    lengthscale = @lift $(sc.lengthscale_factor)/$maxarrow
+    f_norm = @lift vec(norm.($_f))
+    maxarrow = @lift maximum(norm.($_f))
+    normed_f = @lift $_f ./ $maxarrow
+
     # linewidth = @lift $(sc.linewidth_factor)*$arrow_norm
-    valuerange = @lift extrema($arrow_norm)
+    valuerange = @lift extrema($f_norm)
     replace_automatic!(sc, :colorrange) do
         valuerange
     end
 
-    arrows!(sc, f;
-        arrowcolor=arrow_norm,
-        arrowsize,
-        linecolor=arrow_norm,
-        lengthscale,
-        sc.linewidth,
+    arrows!(sc, _f;
+        arrowcolor = f_norm,
+        arrowsize = lift(v->norm(v), _f),
+        linecolor = f_norm,
+        # sc.lengthscale,
+        # sc.linewidth,
+        markerspace = Makie.SceneSpace,
         sc.color,
         sc.colormap,
         sc.colorrange
