@@ -14,10 +14,10 @@ include("typerecipes.jl")
 end
 
 @recipe(ScatterVariable) do scene
-    Attributes(
+    Attributes(;
         lengthscale_factor = 1,
         # linewidth_factor = 1,
-        :arrowsize => 1;
+        :arrowsize => 1,
         :linewidth => 1,
         :color => Makie.Automatic(),
         :markersize => 8,
@@ -76,7 +76,7 @@ function Makie.plot!(sc::ScatterVariable{<:Tuple{VectorVariable{T}}}) where {T}
     maxarrow = @lift maximum(norm.($_v))
 
     arrowsize = @lift $(sc.arrowsize_factor)*$arrow_norm
-    lengthscale = @lift $(sc.lengthscale_factor)/$maxarrow
+    lengthscale = @lift 1/$maxarrow
     # linewidth = @lift $(sc.linewidth_factor)*$arrow_norm
     valuerange = @lift extrema($arrow_norm)
     replace_automatic!(sc, :colorrange) do
