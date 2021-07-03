@@ -30,10 +30,13 @@ using Unitful
 using Unitful: Units
 # Plotting
 # Track what remains to be moved over to MakieCore
-using Makie: @lift, Arrows, Contour, Figure, Colorbar
+using Makie: @lift, lift, Arrows, Contour, Figure, Colorbar, Axis,
+    AxisAspect, DataAspect, replace_automatic!,
+    Point, Vec, LScene, SceneSpace,
+    arrows!, contour!
 using Observables
 using MakieCore
-using MakieCore: @recipe, Attributes,
+using MakieCore: convert_arguments, @recipe, Attributes,
     # Arrows,
     PointBased, DiscreteSurface, VolumeLike
 import RecipesBase, UnitfulRecipes

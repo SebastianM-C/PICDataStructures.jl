@@ -4,11 +4,11 @@ include("typerecipes.jl")
     Attributes(;
         :lengthscale => 1.0f0,
         # linewidth_factor = 1,
-        :arrowsize => Makie.Automatic(),
-        :linewidth => Makie.Automatic(),
-        :color => Makie.Automatic(),
+        :arrowsize => MakieCore.Automatic(),
+        :linewidth => MakieCore.Automatic(),
+        :color => MakieCore.Automatic(),
         :colormap => :viridis,
-        :colorrange => Makie.Automatic(),
+        :colorrange => MakieCore.Automatic(),
         :levels => 6,
     )
 end
@@ -32,8 +32,8 @@ function MakieCore.plot!(sc::ScatterVariable{<:Tuple{ScalarVariable{T}}}) where 
     v = sc[1]
     grid, data = unwrap(v)
 
-    scattergrid = Node(empty(grid[]))
-    scattercolor = Node(Float32[])
+    scattergrid = Observable(empty(grid[]))
+    scattercolor = Observable(Float32[])
     cl = @lift ustrip(max(abs.(extrema($v))...))
     valuerange = @lift (-$cl, $cl)
 
@@ -177,7 +177,7 @@ function MakieCore.plot!(sc::FieldPlot{<:Tuple{VectorField{N}}}) where N
         linecolor = f_norm,
         # sc.lengthscale,
         # sc.linewidth,
-        markerspace = Makie.SceneSpace,
+        markerspace = SceneSpace,
         sc.color,
         sc.colormap,
         sc.colorrange
