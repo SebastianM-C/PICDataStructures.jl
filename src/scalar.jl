@@ -49,5 +49,5 @@ function Base.similar(::ScalarQuantity, f, ::Type{S}, dims::Dims) where S
     newstruct(f, data, grid)
 end
 
-Base.getproperty(::ScalarQuantity, f, key::Symbol) = getfield(f, key)
+Base.getproperty(::ScalarQuantity, f::AbstractPICDataStructure, key::Symbol) = getfield(f, key)
 Base.propertynames(::ScalarQuantity, f::AbstractPICDataStructure) = fieldnames(typeof(f))
