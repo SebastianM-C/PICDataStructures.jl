@@ -144,6 +144,13 @@ using RecursiveArrayTools: recursive_bottom_eltype
 
             @test nameof(f) == nameof(f_slice) == "3D"
         end
+        @testset "getindex slice" begin
+            f = fields[3]
+            N = 3
+
+            f_slice = f[x=1]
+            @test ndims(f_slice) == N - 1
+        end
     end
 
     @testset "Unit handling" begin

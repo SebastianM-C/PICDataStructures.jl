@@ -1,4 +1,5 @@
 function Unitful.ustrip(f::AbstractPICDataStructure)
+    !hasunits(f) && return f
     data = unwrapdata(f)
     grid = getdomain(f)
     @debug "Stripping units for data of type $(typeof(data)) and grid $(typeof(grid))"
