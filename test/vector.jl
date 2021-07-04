@@ -91,10 +91,14 @@ using StaticArrays
 
         @testset "Slicing" begin
             if N > 1
-                f_slice = selectdim(f, :x, zero(recursive_bottom_eltype(grid)))
+                𝟘 = zero(recursive_bottom_eltype(grid))
+                f_slice = selectdim(f, :x, 𝟘)
                 @test length(propertynames(f_slice)) == N - 1
                 @test dimensionality(f_slice) == N - 1
                 @test nameof(f_slice) == nameof(f)
+
+                f_slice2 = f[x=𝟘]
+                @test dimensionality(f_slice) == N - 1
             end
         end
 

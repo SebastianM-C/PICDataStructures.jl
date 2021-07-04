@@ -6,6 +6,19 @@ end
     setindex!(scalarness(T), f, v, i)
 end
 
+@propagate_inbounds function Base.getindex(f::T; named_idxs...) where T <: AbstractPICDataStructure
+    location = named_idxs.data
+    dir = only(keys(location))
+    val = only(values(location))
+    idx = location2idx(domain_discretization(T), f, dir, val)
+
+    dim = dir_to_idx(dir)
+    data = selectdim(unwrapdata(f), dim, idx)
+    grid = dropdims(getdomain(f); dims=dir)
+
+    newstruct(f, data, grid)
+end
+
 Base.firstindex(f::AbstractPICDataStructure) = firstindex(unwrapdata(f))
 Base.lastindex(f::AbstractPICDataStructure) = lastindex(unwrapdata(f))
 
