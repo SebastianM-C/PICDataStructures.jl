@@ -117,7 +117,7 @@ function get_componenet(f::T, key) where T
     scalar_from(T)(data, grid)
 end
 
-Base.getproperty(::VectorQuantity, f, key::Symbol) = get_componenet(f, key)
+Base.getproperty(::VectorQuantity, f::AbstractPICDataStructure, key::Symbol) = get_componenet(f, key)
 Base.propertynames(::VectorQuantity, f::AbstractPICDataStructure) = propertynames(unwrapdata(f))
 
 vector_from(::Type{<:ScalarField}) = VectorField

@@ -29,8 +29,16 @@ using IntervalSets
 using Unitful
 using Unitful: Units
 # Plotting
-using AbstractPlotting
-using AbstractPlotting: PointBased, SurfaceLike, VolumeLike
+# Track what remains to be moved over to MakieCore
+using Makie: @lift, lift, Arrows, Contour, Figure, Colorbar, Axis,
+    AxisAspect, DataAspect, replace_automatic!,
+    Point, Vec, LScene, SceneSpace,
+    arrows!, contour!
+using Observables
+using MakieCore
+using MakieCore: convert_arguments, @recipe, Attributes,
+    # Arrows,
+    PointBased, DiscreteSurface, VolumeLike
 import RecipesBase, UnitfulRecipes
 
 abstract type AbstractPICDataStructure{T,N,G} <: AbstractArray{T,N} end

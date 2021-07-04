@@ -1,39 +1,39 @@
 include("typerecipes.jl")
 
 @recipe(FieldPlot) do scene
-    Attributes(
-        lengthscale_factor = 1,
+    Attributes(;
+        :lengthscale => 1.0f0,
         # linewidth_factor = 1,
-        arrowsize_factor = 1;
-        :linewidth => 1,
-        :color => AbstractPlotting.automatic,
+        :arrowsize => MakieCore.Automatic(),
+        :linewidth => MakieCore.Automatic(),
+        :color => MakieCore.Automatic(),
         :colormap => :viridis,
-        :colorrange => AbstractPlotting.automatic,
+        :colorrange => MakieCore.Automatic(),
         :levels => 6,
     )
 end
 
 @recipe(ScatterVariable) do scene
-    Attributes(
+    Attributes(;
         lengthscale_factor = 1,
         # linewidth_factor = 1,
-        arrowsize_factor = 1;
+        :arrowsize => 1,
         :linewidth => 1,
-        :color => AbstractPlotting.automatic,
+        :color => MakieCore.Automatic(),
         :markersize => 8,
         :strokewidth => 1.0,
         :strokecolor => :black,
         :colormap => :viridis,
-        :colorrange => AbstractPlotting.automatic
+        :colorrange => MakieCore.Automatic()
     )
 end
 
-function AbstractPlotting.plot!(sc::ScatterVariable{<:Tuple{ScalarVariable{T}}}) where {T}
+function MakieCore.plot!(sc::ScatterVariable{<:Tuple{ScalarVariable{T}}}) where {T}
     v = sc[1]
     grid, data = unwrap(v)
 
-    scattergrid = Node(empty(grid[]))
-    scattercolor = Node(Float32[])
+    scattergrid = Observable(empty(grid[]))
+    scattercolor = Observable(Float32[])
     cl = @lift ustrip(max(abs.(extrema($v))...))
     valuerange = @lift (-$cl, $cl)
 
@@ -52,7 +52,7 @@ function AbstractPlotting.plot!(sc::ScatterVariable{<:Tuple{ScalarVariable{T}}})
         valuerange
     end
 
-    AbstractPlotting.Observables.onany(update_plot, grid, data)
+    onany(update_plot, grid, data)
 
     update_plot(grid[], data[])
 
@@ -63,7 +63,7 @@ function AbstractPlotting.plot!(sc::ScatterVariable{<:Tuple{ScalarVariable{T}}})
     return sc
 end
 
-function AbstractPlotting.plot!(sc::ScatterVariable{<:Tuple{VectorVariable{T}}}) where {T}
+function MakieCore.plot!(sc::ScatterVariable{<:Tuple{VectorVariable{T}}}) where {T}
     v = sc[1]
 
     if hasunits(v)
@@ -75,8 +75,8 @@ function AbstractPlotting.plot!(sc::ScatterVariable{<:Tuple{VectorVariable{T}}})
     arrow_norm = @lift Float32.(vec(norm.($_v)))
     maxarrow = @lift maximum(norm.($_v))
 
-    arrowsize = @lift $(sc.arrowsize_factor)*$arrow_norm
-    lengthscale = @lift $(sc.lengthscale_factor)/$maxarrow
+    # arrowsize = @lift $(sc.arrowsize_factor)*$arrow_norm
+    lengthscale = @lift 1/$maxarrow
     # linewidth = @lift $(sc.linewidth_factor)*$arrow_norm
     valuerange = @lift extrema($arrow_norm)
     replace_automatic!(sc, :colorrange) do
@@ -89,7 +89,7 @@ function AbstractPlotting.plot!(sc::ScatterVariable{<:Tuple{VectorVariable{T}}})
 
     plt = arrows!(sc, v;
         arrowcolor=arrow_norm,
-        arrowsize,
+        sc.arrowsize,
         linecolor=arrow_norm,
         lengthscale,
         sc.linewidth,
@@ -100,7 +100,7 @@ function AbstractPlotting.plot!(sc::ScatterVariable{<:Tuple{VectorVariable{T}}})
     return sc
 end
 
-function AbstractPlotting.plot!(sc::FieldPlot{<:Tuple{ScalarField{1}}})
+function MakieCore.plot!(sc::FieldPlot{<:Tuple{ScalarField{1}}})
     f = sc[1]
 
     grid, data = unwrap(f)
@@ -116,7 +116,7 @@ function AbstractPlotting.plot!(sc::FieldPlot{<:Tuple{ScalarField{1}}})
     return sc
 end
 
-function AbstractPlotting.plot!(sc::FieldPlot{<:Tuple{ScalarField{2}}})
+function MakieCore.plot!(sc::FieldPlot{<:Tuple{ScalarField{2}}})
     f = sc[1]
 
     grid, data = unwrap(f)
@@ -132,7 +132,7 @@ function AbstractPlotting.plot!(sc::FieldPlot{<:Tuple{ScalarField{2}}})
     return sc
 end
 
-function AbstractPlotting.plot!(sc::FieldPlot{<:Tuple{ScalarField{3}}})
+function MakieCore.plot!(sc::FieldPlot{<:Tuple{ScalarField{3}}})
     f = sc[1]
 
     cl = @lift ustrip(max(abs.(extrema($f))...))
@@ -152,7 +152,7 @@ function AbstractPlotting.plot!(sc::FieldPlot{<:Tuple{ScalarField{3}}})
     return sc
 end
 
-function AbstractPlotting.plot!(sc::FieldPlot{<:Tuple{VectorField{N}}}) where N
+function MakieCore.plot!(sc::FieldPlot{<:Tuple{VectorField{N}}}) where N
     f = sc[1]
 
     if hasunits(f)
@@ -160,23 +160,24 @@ function AbstractPlotting.plot!(sc::FieldPlot{<:Tuple{VectorField{N}}}) where N
     else
         _f = f
     end
-    arrow_norm = @lift Float32.(vec(norm.($_f)))
-    maxarrow = @lift maximum(norm.($_f))
 
-    arrowsize = @lift $(sc.arrowsize_factor)*$arrow_norm
-    lengthscale = @lift $(sc.lengthscale_factor)/$maxarrow
+    f_norm = @lift vec(norm.($_f))
+    maxarrow = @lift maximum(norm.($_f))
+    normed_f = @lift $_f ./ $maxarrow
+
     # linewidth = @lift $(sc.linewidth_factor)*$arrow_norm
-    valuerange = @lift extrema($arrow_norm)
+    valuerange = @lift extrema($f_norm)
     replace_automatic!(sc, :colorrange) do
         valuerange
     end
 
-    arrows!(sc, f;
-        arrowcolor=arrow_norm,
-        arrowsize,
-        linecolor=arrow_norm,
-        lengthscale,
-        sc.linewidth,
+    arrows!(sc, _f;
+        arrowcolor = f_norm,
+        arrowsize = lift(v->norm(v), _f),
+        linecolor = f_norm,
+        # sc.lengthscale,
+        # sc.linewidth,
+        markerspace = SceneSpace,
         sc.color,
         sc.colormap,
         sc.colorrange

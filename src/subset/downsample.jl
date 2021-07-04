@@ -12,7 +12,7 @@ end
 
 function ImageTransformations.imresize(g::AbstractAxisGrid, target_size...)
     grid_axes = collect(g)
-    resized_axes = (imresize(g, t) for (g,t) in zip(grid_axes, target_size))
+    resized_axes = (imresize(collect(g), t) for (g,t) in zip(grid_axes, target_size))
     AxisGrid(resized_axes..., names=propertynames(g))
 end
 
@@ -27,8 +27,8 @@ function approx_target_size(::Type{T}) where T
 end
 approx_target_size(::ParticleGrid, ::ScalarQuantity) = 7*10^5
 approx_target_size(::ParticleGrid, ::VectorQuantity) = 70
-approx_target_size(::LatticeGrid{1}, ::ScalarQuantity) = 400
-approx_target_size(::LatticeGrid{2}, ::ScalarQuantity) = 160
+approx_target_size(::LatticeGrid{1}, ::ScalarQuantity) = 600
+approx_target_size(::LatticeGrid{2}, ::ScalarQuantity) = 400
 approx_target_size(::LatticeGrid{3}, ::ScalarQuantity) = 120
 approx_target_size(::LatticeGrid{2}, ::VectorQuantity) = 25
 approx_target_size(::LatticeGrid{3}, ::VectorQuantity) = 15
