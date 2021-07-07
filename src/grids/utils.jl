@@ -34,7 +34,7 @@ In the case of Unitful quantities, they can be excluded by setting `include_unit
 """
 function axisnames(grid::AbstractGrid; include_units=true)
     names = string.(propertynames(grid))
-    if include_units && hasunits(grid)
+    if include_units && hasunit(grid)
         units = unitname.(grid)
         string.(names, (" (",), units, (")",))
     else

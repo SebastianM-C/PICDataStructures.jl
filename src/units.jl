@@ -1,9 +1,9 @@
 function Unitful.ustrip(f::AbstractPICDataStructure)
-    !hasunits(f) && return f
+    !hasunit(f) && return f
     data = unwrapdata(f)
     grid = getdomain(f)
     @debug "Stripping units for data of type $(typeof(data)) and grid $(typeof(grid))"
-    udata = ustrip_data(data)
+    udata = hasunit(data) ? ustrip_data(data) : data
     ugrid = ustrip(grid)
 
     newstruct(f, udata, ugrid)
@@ -35,5 +35,6 @@ for (f, ff) in zip((:uconvert, :ustrip), (:uconvert_data, :ustrip_data))
 end
 
 recursive_bottom_unit(f) = unit(recursive_bottom_eltype(f))
-hasunits(f) = recursive_bottom_unit(f) ≠ NoUnits
-unitname(f) = hasunits(f) ? string(recursive_bottom_unit(f)) : ""
+hasunit(f) = recursive_bottom_unit(f) ≠ NoUnits
+hasunit(f::AbstractPICDataStructure) = hasunit(unwrapdata(f)) || hasunit(getdomain(f))
+unitname(f) = hasunit(f) ? string(recursive_bottom_unit(f)) : ""

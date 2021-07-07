@@ -66,7 +66,7 @@ end
 function MakieCore.plot!(sc::ScatterVariable{<:Tuple{VectorVariable{T}}}) where {T}
     v = sc[1]
 
-    if hasunits(v)
+    if hasunit(v)
         _v = @lift ustrip($v)
     else
         _v = v
@@ -155,7 +155,7 @@ end
 function MakieCore.plot!(sc::FieldPlot{<:Tuple{VectorField{N}}}) where N
     f = sc[1]
 
-    if hasunits(f)
+    if hasunit(f)
         _f = @lift ustrip($f)
     else
         _f = f

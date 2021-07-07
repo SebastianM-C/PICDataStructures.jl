@@ -14,7 +14,7 @@ end
 
 function MakieCore.convert_arguments(P::Type{<:Arrows}, f::VectorField{N}) where N
     @debug "VectorField Arrows"
-    _f = hasunits(f) ? ustrip(f) : f
+    _f = hasunit(f) ? ustrip(f) : f
 
     grid = getdomain(_f)
     data = unwrapdata(_f)
@@ -27,7 +27,7 @@ end
 
 function MakieCore.convert_arguments(P::Type{<:Arrows}, v::VectorVariable)
     @debug "VectorVariable Arrows"
-    _v = hasunits(v) ? ustrip(v) : v
+    _v = hasunit(v) ? ustrip(v) : v
     N = dimensionality(v)
 
     grid = getdomain(_v)
@@ -40,7 +40,7 @@ end
 
 function MakieCore.convert_arguments(P::Type{<:Contour}, f::ScalarField{3})
     @debug "ScalarField{3} with plot type $P"
-    _f = hasunits(f) ? ustrip(f) : f
+    _f = hasunit(f) ? ustrip(f) : f
     grid, data = unwrap(_f)
 
     # 3D contour plots need the VolumeLike trait
