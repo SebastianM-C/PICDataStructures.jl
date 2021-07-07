@@ -1,3 +1,31 @@
+# Version v0.6.0
+
+## Breaking changes
+
+- `hasunits` has been renamed to `hasunit` and it now also checks the grid for units
+
+# Version v0.5.3
+
+## New features
+
+- Add new slice interface using `getindex` (e.g. `f[x=0u"m"]`)
+
+# Version v0.5.2
+
+## New features
+
+- Update from AbstractPlotting to Makie.
+
+## Bugfixes
+
+- Fix `imresize` for `AbstractAxisGrid`s
+
+# Version v0.5.1
+
+## New features
+
+- Data structures can now have names.
+
 # Version v0.5.0
 
 ## New features
