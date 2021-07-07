@@ -104,7 +104,7 @@ function plotdata(f::Observable;
             label = cbar_label
         )
     else
-        if hasunits(first_f)
+        if hasunit(first_f)
             clims = @lift extrema(norm.(ustrip($f)))
         else
             clims = @lift extrema(norm.($f))

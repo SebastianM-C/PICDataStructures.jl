@@ -32,7 +32,7 @@ In the case of Unitful quantities, they can be excluded by setting `include_unit
 axisnames(f::AbstractPICDataStructure; include_units=true) = axisnames(getdomain(f); include_units)
 
 function unwrap(f)
-    _f = hasunits(f) ? ustrip(f) : f
+    _f = hasunit(f) ? ustrip(f) : f
 
     grid = getdomain(_f)
     data = unwrapdata(_f)
@@ -57,8 +57,7 @@ function expandgrid(::ParticleGrid, f)
 end
 
 function unwrap(f::Observable)
-    # @debug "unwraping Observable"
-    _f = @lift hasunits($f) ? ustrip($f) : $f
+    _f = @lift hasunit($f) ? ustrip($f) : $f
 
     grid = expandgrid(_f)
     data = @lift unwrapdata($_f)
