@@ -33,11 +33,12 @@ using Unitful: Units
 using Makie: @lift, lift, Arrows, Contour, Figure, Colorbar, Axis,
     AxisAspect, DataAspect, replace_automatic!,
     Point, Vec, LScene, SceneSpace,
-    arrows!, contour!
+    arrows!, contour!,
+    cam3d!
 using Observables
 using MakieCore
-using MakieCore: convert_arguments, @recipe, Attributes,
-    # Arrows,
+using MakieCore: convert_arguments, @recipe, theme, Attributes,
+    automatic,
     PointBased, DiscreteSurface, VolumeLike
 import RecipesBase, UnitfulRecipes
 

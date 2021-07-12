@@ -1,14 +1,18 @@
 include("typerecipes.jl")
 
 @recipe(FieldPlot) do scene
-    Attributes(;
+    Attributes(
+        symmetric_cbar = false;
         :lengthscale => 1.0f0,
         # linewidth_factor = 1,
-        :arrowsize => MakieCore.Automatic(),
-        :linewidth => MakieCore.Automatic(),
-        :color => MakieCore.Automatic(),
+        :arrowsize => automatic,
+        :linewidth => automatic,
+        :color => automatic,
         :colormap => :viridis,
-        :colorrange => MakieCore.Automatic(),
+        :colorrange => automatic,
+        :lowclip => nothing,
+        :highclip => nothing,
+        :inspectable => theme(scene, :inspectable),
         :levels => 6,
     )
 end
@@ -19,12 +23,15 @@ end
         # linewidth_factor = 1,
         :arrowsize => 1,
         :linewidth => 1,
-        :color => MakieCore.Automatic(),
+        :color => automatic,
         :markersize => 8,
         :strokewidth => 1.0,
         :strokecolor => :black,
         :colormap => :viridis,
-        :colorrange => MakieCore.Automatic()
+        :colorrange => automatic,
+        :lowclip => nothing,
+        :highclip => nothing,
+        :inspectable => theme(scene, :inspectable),
     )
 end
 
@@ -56,9 +63,17 @@ function MakieCore.plot!(sc::ScatterVariable{<:Tuple{ScalarVariable{T}}}) where 
 
     update_plot(grid[], data[])
 
-    plt = scatter!(sc, scattergrid;
-        color=scattercolor, sc.colorrange, sc.markersize,
-        sc.strokewidth, sc.strokecolor, sc.colormap)
+    scatter!(sc, scattergrid;
+        sc.markersize,
+        sc.strokewidth,
+        sc.strokecolor,
+        color=scattercolor,
+        sc.colormap,
+        sc.colorrange,
+        sc.highclip,
+        sc.lowclip,
+        sc.inspectable
+    )
 
     return sc
 end
@@ -87,7 +102,7 @@ function MakieCore.plot!(sc::ScatterVariable{<:Tuple{VectorVariable{T}}}) where 
         valuerange
     end
 
-    plt = arrows!(sc, v;
+    arrows!(sc, v;
         arrowcolor=arrow_norm,
         sc.arrowsize,
         linecolor=arrow_norm,
@@ -95,9 +110,28 @@ function MakieCore.plot!(sc::ScatterVariable{<:Tuple{VectorVariable{T}}}) where 
         sc.linewidth,
         sc.color,
         sc.colormap,
-        sc.colorrange)
+        sc.colorrange,
+        sc.highclip,
+        sc.lowclip,
+        sc.inspectable
+    )
 
     return sc
+end
+
+function symmetric_colorrange!(sc, f)
+    onany(sc[:symmetric_cbar], f) do symmetric, f
+        extr = map(vals->ustrip.(vals), extrema(f))
+        if symmetric
+            cl = map(e->max(abs.(e)...), extr)
+            valuerange = map(c->(-c, c), cl)
+        else
+            valuerange = extr
+        end
+        replace_automatic!(sc, :colorrange) do
+            valuerange
+        end
+    end
 end
 
 function MakieCore.plot!(sc::FieldPlot{<:Tuple{ScalarField{1}}})
@@ -105,13 +139,16 @@ function MakieCore.plot!(sc::FieldPlot{<:Tuple{ScalarField{1}}})
 
     grid, data = unwrap(f)
 
-    cl = @lift ustrip(max(abs.(extrema($f))...))
-    valuerange = @lift (-$cl, $cl)
-    replace_automatic!(sc, :colorrange) do
-        valuerange
-    end
+    symmetric_colorrange!(sc, f)
+    notify(sc[:symmetric_cbar])
 
-    plt = lines!(sc, grid..., data; sc.colorrange, sc.colormap)
+    lines!(sc, grid..., data;
+        sc.colorrange,
+        sc.colormap,
+        sc.highclip,
+        sc.lowclip,
+        sc.inspectable
+    )
 
     return sc
 end
@@ -121,13 +158,16 @@ function MakieCore.plot!(sc::FieldPlot{<:Tuple{ScalarField{2}}})
 
     grid, data = unwrap(f)
 
-    cl = @lift ustrip(max(abs.(extrema($f))...))
-    valuerange = @lift (-$cl, $cl)
-    replace_automatic!(sc, :colorrange) do
-        valuerange
-    end
+    symmetric_colorrange!(sc, f)
+    notify(sc[:symmetric_cbar])
 
-    plt = heatmap!(sc, grid..., data; sc.colorrange, sc.colormap)
+    heatmap!(sc, grid..., data;
+        sc.colorrange,
+        sc.colormap,
+        sc.highclip,
+        sc.lowclip,
+        sc.inspectable
+    )
 
     return sc
 end
@@ -135,18 +175,18 @@ end
 function MakieCore.plot!(sc::FieldPlot{<:Tuple{ScalarField{3}}})
     f = sc[1]
 
-    cl = @lift ustrip(max(abs.(extrema($f))...))
-    valuerange = @lift (-$cl, $cl)
-    replace_automatic!(sc, :colorrange) do
-        valuerange
-    end
+    symmetric_colorrange!(sc, f)
+    notify(sc[:symmetric_cbar])
     @lift @debug "Contour plot for 3D ScalarField with " * string($(sc.levels)) * " levels"
 
-    plt = contour!(sc, f;
+    contour!(sc, f;
         sc.colorrange,
         sc.colormap,
         sc.color,
-        sc.levels
+        sc.levels,
+        sc.highclip,
+        sc.lowclip,
+        sc.inspectable
     )
 
     return sc
@@ -180,7 +220,10 @@ function MakieCore.plot!(sc::FieldPlot{<:Tuple{VectorField{N}}}) where N
         markerspace = SceneSpace,
         sc.color,
         sc.colormap,
-        sc.colorrange
+        sc.colorrange,
+        sc.highclip,
+        sc.lowclip,
+        sc.inspectable
     )
 
     return sc
