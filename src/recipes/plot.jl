@@ -36,6 +36,7 @@ function plotdata(f::Observable;
     zlabel = :auto,
     title = "",
     downsample_size = :default,
+    aspect_ratio = :default,
     cbar_orientation = :vertical,
     cbar_label = "",
     saveplot = false,
@@ -50,12 +51,12 @@ function plotdata(f::Observable;
             xlabel = xlabel == :auto ? only(axisnames(first_f)) : xlabel
             # ylabel = nameof(f)
             ylabel = ""
-            aspect = AxisAspect(1)
+            aspect = aspect_ratio == :default ? AxisAspect(1) : aspect_ratio
         else
             _xlabel, _ylabel = axisnames(first_f)
             xlabel = xlabel == :auto ? _xlabel : xlabel
             ylabel = ylabel == :auto ? _ylabel : ylabel
-            aspect = DataAspect()
+            aspect = aspect_ratio == :default ? DataAspect() : aspect_ratio
         end
 
         ax = Axis(figurepos[1,1];
@@ -70,7 +71,10 @@ function plotdata(f::Observable;
         zlabel = zlabel == :auto ? _zlabel : zlabel
 
         ax = LScene(figurepos[1,1];
-            axis = (names = (axisnames = (xlabel, ylabel, zlabel),),)
+            axis = (
+                names = (axisnames = (xlabel, ylabel, zlabel),),
+            ),
+            scenekw = (camera = cam3d!, raw = false)
         )
     end
 
@@ -94,6 +98,8 @@ function plotdata(f::Observable;
         Colorbar(figurepos[1,2], plt;
             width = 20,
             tellheight = false,
+            highclip = plt.highclip,
+            lowclip = plt.lowclip,
             label = cbar_label
         )
     elseif is2D
@@ -101,6 +107,8 @@ function plotdata(f::Observable;
             width = 20,
             vertical = false, flipaxis = false,
             tellheight = true,
+            highclip = plt.highclip,
+            lowclip = plt.lowclip,
             label = cbar_label
         )
     else
@@ -114,6 +122,8 @@ function plotdata(f::Observable;
             tellwidth = true,
             colormap = :jet1,
             limits = clims,
+            highclip = plt.highclip,
+            lowclip = plt.lowclip,
             label = cbar_label
         )
     end

@@ -10,6 +10,9 @@ include("typerecipes.jl")
         :color => automatic,
         :colormap => :viridis,
         :colorrange => automatic,
+        :lowclip => nothing,
+        :highclip => nothing,
+        :inspectable => theme(scene, :inspectable),
         :levels => 6,
     )
 end
@@ -124,7 +127,13 @@ function MakieCore.plot!(sc::FieldPlot{<:Tuple{ScalarField{1}}})
     symmetric_colorrange!(sc, f)
     notify(sc[:symmetric_cbar])
 
-    plt = lines!(sc, grid..., data; sc.colorrange, sc.colormap)
+    lines!(sc, grid..., data;
+        sc.colorrange,
+        sc.colormap,
+        sc.highclip,
+        sc.lowclip,
+        sc.inspectable
+    )
 
     return sc
 end
@@ -137,7 +146,13 @@ function MakieCore.plot!(sc::FieldPlot{<:Tuple{ScalarField{2}}})
     symmetric_colorrange!(sc, f)
     notify(sc[:symmetric_cbar])
 
-    plt = heatmap!(sc, grid..., data; sc.colorrange, sc.colormap)
+    heatmap!(sc, grid..., data;
+        sc.colorrange,
+        sc.colormap,
+        sc.highclip,
+        sc.lowclip,
+        sc.inspectable
+    )
 
     return sc
 end
@@ -149,11 +164,14 @@ function MakieCore.plot!(sc::FieldPlot{<:Tuple{ScalarField{3}}})
     notify(sc[:symmetric_cbar])
     @lift @debug "Contour plot for 3D ScalarField with " * string($(sc.levels)) * " levels"
 
-    plt = contour!(sc, f;
+    contour!(sc, f;
         sc.colorrange,
         sc.colormap,
         sc.color,
-        sc.levels
+        sc.levels,
+        sc.highclip,
+        sc.lowclip,
+        sc.inspectable
     )
 
     return sc
