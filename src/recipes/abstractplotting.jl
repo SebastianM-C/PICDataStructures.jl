@@ -4,11 +4,11 @@ include("typerecipes.jl")
     Attributes(;
         :lengthscale => 1.0f0,
         # linewidth_factor = 1,
-        :arrowsize => MakieCore.Automatic(),
-        :linewidth => MakieCore.Automatic(),
-        :color => MakieCore.Automatic(),
+        :arrowsize => automatic,
+        :linewidth => automatic,
+        :color => automatic,
         :colormap => :viridis,
-        :colorrange => MakieCore.Automatic(),
+        :colorrange => automatic,
         :levels => 6,
     )
 end
@@ -19,12 +19,12 @@ end
         # linewidth_factor = 1,
         :arrowsize => 1,
         :linewidth => 1,
-        :color => MakieCore.Automatic(),
+        :color => automatic,
         :markersize => 8,
         :strokewidth => 1.0,
         :strokecolor => :black,
         :colormap => :viridis,
-        :colorrange => MakieCore.Automatic()
+        :colorrange => automatic
     )
 end
 
@@ -87,7 +87,7 @@ function MakieCore.plot!(sc::ScatterVariable{<:Tuple{VectorVariable{T}}}) where 
         valuerange
     end
 
-    plt = arrows!(sc, v;
+    arrows!(sc, v;
         arrowcolor=arrow_norm,
         sc.arrowsize,
         linecolor=arrow_norm,
