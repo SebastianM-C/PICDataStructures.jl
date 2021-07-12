@@ -28,7 +28,10 @@ end
         :strokewidth => 1.0,
         :strokecolor => :black,
         :colormap => :viridis,
-        :colorrange => automatic
+        :colorrange => automatic,
+        :lowclip => nothing,
+        :highclip => nothing,
+        :inspectable => theme(scene, :inspectable),
     )
 end
 
@@ -60,9 +63,17 @@ function MakieCore.plot!(sc::ScatterVariable{<:Tuple{ScalarVariable{T}}}) where 
 
     update_plot(grid[], data[])
 
-    plt = scatter!(sc, scattergrid;
-        color=scattercolor, sc.colorrange, sc.markersize,
-        sc.strokewidth, sc.strokecolor, sc.colormap)
+    scatter!(sc, scattergrid;
+        sc.markersize,
+        sc.strokewidth,
+        sc.strokecolor,
+        color=scattercolor,
+        sc.colormap,
+        sc.colorrange,
+        sc.highclip,
+        sc.lowclip,
+        sc.inspectable
+    )
 
     return sc
 end
@@ -99,7 +110,11 @@ function MakieCore.plot!(sc::ScatterVariable{<:Tuple{VectorVariable{T}}}) where 
         sc.linewidth,
         sc.color,
         sc.colormap,
-        sc.colorrange)
+        sc.colorrange,
+        sc.highclip,
+        sc.lowclip,
+        sc.inspectable
+    )
 
     return sc
 end
@@ -205,7 +220,10 @@ function MakieCore.plot!(sc::FieldPlot{<:Tuple{VectorField{N}}}) where N
         markerspace = SceneSpace,
         sc.color,
         sc.colormap,
-        sc.colorrange
+        sc.colorrange,
+        sc.highclip,
+        sc.lowclip,
+        sc.inspectable
     )
 
     return sc
