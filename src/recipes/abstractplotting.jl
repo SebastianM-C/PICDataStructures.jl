@@ -1,7 +1,8 @@
 include("typerecipes.jl")
 
 @recipe(FieldPlot) do scene
-    Attributes(;
+    Attributes(
+        symmetric_cbar = false;
         :lengthscale => 1.0f0,
         # linewidth_factor = 1,
         :arrowsize => automatic,
@@ -100,16 +101,28 @@ function MakieCore.plot!(sc::ScatterVariable{<:Tuple{VectorVariable{T}}}) where 
     return sc
 end
 
+function symmetric_colorrange!(sc, f)
+    onany(sc[:symmetric_cbar], f) do symmetric, f
+        extr = map(vals->ustrip.(vals), extrema(f))
+        if symmetric
+            cl = map(e->max(abs.(e)...), extr)
+            valuerange = map(c->(-c, c), cl)
+        else
+            valuerange = extr
+        end
+        replace_automatic!(sc, :colorrange) do
+            valuerange
+        end
+    end
+end
+
 function MakieCore.plot!(sc::FieldPlot{<:Tuple{ScalarField{1}}})
     f = sc[1]
 
     grid, data = unwrap(f)
 
-    cl = @lift ustrip(max(abs.(extrema($f))...))
-    valuerange = @lift (-$cl, $cl)
-    replace_automatic!(sc, :colorrange) do
-        valuerange
-    end
+    symmetric_colorrange!(sc, f)
+    notify(sc[:symmetric_cbar])
 
     plt = lines!(sc, grid..., data; sc.colorrange, sc.colormap)
 
@@ -121,11 +134,8 @@ function MakieCore.plot!(sc::FieldPlot{<:Tuple{ScalarField{2}}})
 
     grid, data = unwrap(f)
 
-    cl = @lift ustrip(max(abs.(extrema($f))...))
-    valuerange = @lift (-$cl, $cl)
-    replace_automatic!(sc, :colorrange) do
-        valuerange
-    end
+    symmetric_colorrange!(sc, f)
+    notify(sc[:symmetric_cbar])
 
     plt = heatmap!(sc, grid..., data; sc.colorrange, sc.colormap)
 
@@ -135,11 +145,8 @@ end
 function MakieCore.plot!(sc::FieldPlot{<:Tuple{ScalarField{3}}})
     f = sc[1]
 
-    cl = @lift ustrip(max(abs.(extrema($f))...))
-    valuerange = @lift (-$cl, $cl)
-    replace_automatic!(sc, :colorrange) do
-        valuerange
-    end
+    symmetric_colorrange!(sc, f)
+    notify(sc[:symmetric_cbar])
     @lift @debug "Contour plot for 3D ScalarField with " * string($(sc.levels)) * " levels"
 
     plt = contour!(sc, f;
