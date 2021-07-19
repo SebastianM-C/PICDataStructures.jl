@@ -4,10 +4,22 @@ function ImageTransformations.imresize(f::AbstractPICDataStructure, target_size:
     newstruct(f, data, grid)
 end
 
-resize_data(data, target_size...) = imresize(data, target_size...)
+function resize_data(data, target_size...)
+    if hasunit(data)
+        # use imresize directly on the underlying array
+        T = recursive_unitless_bottom_eltype(data)
+        data_units = recursive_bottom_unit(data)
+        raw_data = reinterpret(T, data)
+        resized_data = imresize(raw_data, target_size...)
+        U = typeof(one(T) * data_units)
+        reinterpret(U, resized_data)
+    else
+        imresize(data, target_size...)
+    end
+end
 
 function resize_data(data::StructArray, target_size...)
-    StructArray(map(c->imresize(c, target_size), components(data)))
+    StructArray(map(c->imresize(collect(c), target_size), components(data)))
 end
 
 function ImageTransformations.imresize(g::AbstractAxisGrid, target_size...)
@@ -40,6 +52,7 @@ Downsample the given input `f` to `target_size`. If no size is
 provided, one is computed based on the type.
 """
 function downsample(f, target_size...)
+    # TODO: use restrict instead of imresize
     all(size(f) .> target_size) ? imresize(f, target_size...) : f
 end
 
