@@ -26,7 +26,7 @@ end
 # TODO: Investigate if sampling can be a better solution for particle data
 function ImageTransformations.restrict(g::ParticlePositions)
     grid_axes = collect(g)
-    resized_axes = (restrict(g) for g in grid_axes)
+    resized_axes = (resize_data(g) for g in grid_axes)
     ParticlePositions(resized_axes..., names=propertynames(g))
 end
 
