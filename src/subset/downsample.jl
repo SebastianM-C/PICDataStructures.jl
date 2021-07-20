@@ -1,36 +1,32 @@
-function ImageTransformations.imresize(f::AbstractPICDataStructure, target_size::Union{Integer, AbstractUnitRange}...)
-    data = resize_data(unwrapdata(f), target_size...)
-    grid = imresize(getdomain(f), target_size...)
+function ImageTransformations.restrict(f::AbstractPICDataStructure)
+    data = resize_data(unwrapdata(f))
+    grid = restrict(getdomain(f))
     newstruct(f, data, grid)
 end
 
-function resize_data(data, target_size...)
+function resize_data(data)
     if hasunit(data)
         # use imresize directly on the underlying array
-        T = recursive_unitless_bottom_eltype(data)
-        data_units = recursive_bottom_unit(data)
-        raw_data = reinterpret(T, data)
-        resized_data = imresize(raw_data, target_size...)
-        U = typeof(one(T) * data_units)
-        reinterpret(U, resized_data)
+        apply_reinterpret(restrict, data)
     else
-        imresize(data, target_size...)
+        restrict(data)
     end
 end
 
 function resize_data(data::StructArray, target_size...)
-    StructArray(map(c->imresize(collect(c), target_size), components(data)))
+    StructArray(map(c->resize_data(c), components(data)))
 end
 
-function ImageTransformations.imresize(g::AbstractAxisGrid, target_size...)
+function ImageTransformations.restrict(g::AbstractAxisGrid)
     grid_axes = collect(g)
-    resized_axes = (imresize(collect(g), t) for (g,t) in zip(grid_axes, target_size))
+    resized_axes = (resize_data(collect(g)) for g in grid_axes)
     AxisGrid(resized_axes..., names=propertynames(g))
 end
 
-function ImageTransformations.imresize(g::ParticlePositions, target_size)
+# TODO: Investigate if sampling can be a better solution for particle data
+function ImageTransformations.restrict(g::ParticlePositions)
     grid_axes = collect(g)
-    resized_axes = (imresize(g, target_size) for g in grid_axes)
+    resized_axes = (restrict(g) for g in grid_axes)
     ParticlePositions(resized_axes..., names=propertynames(g))
 end
 
@@ -41,7 +37,7 @@ approx_target_size(::ParticleGrid, ::ScalarQuantity) = 7*10^5
 approx_target_size(::ParticleGrid, ::VectorQuantity) = 70
 approx_target_size(::LatticeGrid{1}, ::ScalarQuantity) = 600
 approx_target_size(::LatticeGrid{2}, ::ScalarQuantity) = 400
-approx_target_size(::LatticeGrid{3}, ::ScalarQuantity) = 120
+approx_target_size(::LatticeGrid{3}, ::ScalarQuantity) = 200
 approx_target_size(::LatticeGrid{2}, ::VectorQuantity) = 25
 approx_target_size(::LatticeGrid{3}, ::VectorQuantity) = 15
 
@@ -52,8 +48,7 @@ Downsample the given input `f` to `target_size`. If no size is
 provided, one is computed based on the type.
 """
 function downsample(f, target_size...)
-    # TODO: use restrict instead of imresize
-    all(size(f) .> target_size) ? imresize(f, target_size...) : f
+    all(size(f) .> target_size) ? downsample(restrict(f), target_size...) : f
 end
 
 function downsample(f; approx_size=nothing)
