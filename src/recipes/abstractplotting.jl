@@ -3,13 +3,14 @@ include("typerecipes.jl")
 @recipe(FieldPlot) do scene
     Attributes(
         symmetric_cbar = false;
-        :lengthscale => 1.0f0,
-        # linewidth_factor = 1,
         :arrowsize => automatic,
-        :linewidth => automatic,
+        :arrowcolor => automatic,
         :color => automatic,
         :colormap => :viridis,
         :colorrange => automatic,
+        :linecolor => automatic,
+        :lengthscale => 1.0f0,
+        :linewidth => automatic,
         :lowclip => nothing,
         :highclip => nothing,
         :inspectable => theme(scene, :inspectable),
