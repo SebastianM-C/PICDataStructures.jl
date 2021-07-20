@@ -64,22 +64,22 @@ using RecursiveArrayTools: recursive_bottom_eltype
 
         @testset "Downsampling" begin
             if N == 3
-                f_small = downsample(f, 150, 50, 50)
-                @test size(f_small) == (150, 50, 50)
+                f_small = downsample(f, 51, 26, 26)
+                @test size(f_small) == (51, 26, 26)
                 f_small = downsample(f)
                 # in case the downsampling size is too close
                 # to the target one, we will get the same size
                 @test size(f_small) == size(f)
-                f_small = downsample(f, approx_size=50)
-                @test all(size(f_small) .≤ 50)
+                f_small = downsample(f, 50)
+                @test all(size(f_small) .≤ 51)
             elseif N == 2
-                f_small = downsample(f, 50, 50)
-                @test size(f_small) == (50, 50)
+                f_small = downsample(f, 51, 51)
+                @test size(f_small) == (51, 51)
                 f_small = downsample(f)
                 @test all(size(f_small) .≤ 160)
             else
-                f_small = downsample(f, 5)
-                @test size(f_small) == (5,)
+                f_small = downsample(f, 3)
+                @test size(f_small) == (3,)
             end
             @test nameof(f) == nameof(f_small) == "$(N)D"
         end
@@ -232,8 +232,8 @@ end
         end
 
         @testset "Downsampling" begin
-            v_small = downsample(v, 5)
-            @test size(v_small) == (5,)
+            v_small = downsample(v, 4)
+            @test size(v_small) == (4,)
             v_small = downsample(v)
             @test all(size(v_small) .≤ size(v))
             @test nameof(v) == nameof(v_small)

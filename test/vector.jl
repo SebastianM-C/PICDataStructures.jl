@@ -73,13 +73,13 @@ using StaticArrays
 
         @testset "Downsampling" begin
             if N == 3
-                f_small = downsample(f, 150, 50, 50)
-                @test size(f_small) == (150, 50, 50)
+                f_small = downsample(f, 51, 26, 26)
+                @test size(f_small) == (51, 26, 26)
                 f_small = downsample(f)
                 @test all(size(f_small) .≤ 15)
             elseif N == 2
-                f_small = downsample(f, 50, 50)
-                @test size(f_small) == (50, 50)
+                f_small = downsample(f, 51, 51)
+                @test size(f_small) == (51, 51)
                 f_small = downsample(f)
                 @test all(size(f_small) .≤ 25)
             else
@@ -216,8 +216,8 @@ end
         end
 
         @testset "Downsampling" begin
-            v_small = downsample(v, 5)
-            @test size(v_small) == (5,)
+            v_small = downsample(v, 3)
+            @test size(v_small) == (3,)
             v_small = downsample(v)
             @test all(size(v_small) .≤ size(v))
             @test nameof(v) == nameof(v_small)

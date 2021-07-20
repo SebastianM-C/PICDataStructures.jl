@@ -56,6 +56,15 @@ function expandgrid(::ParticleGrid, f)
     @lift getdomain($f)
 end
 
+@inline function apply_reinterpret(f, data)
+    T = recursive_unitless_bottom_eltype(data)
+    data_units = recursive_bottom_unit(data)
+    raw_data = reinterpret(T, data)
+    resized_data = f(raw_data)
+    U = typeof(one(T) * data_units)
+    reinterpret(U, resized_data)
+end
+
 function unwrap(f::Observable)
     _f = @lift hasunit($f) ? ustrip($f) : $f
 
