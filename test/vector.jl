@@ -99,6 +99,10 @@ using StaticArrays
 
                 f_slice2 = f[x=𝟘]
                 @test dimensionality(f_slice) == N - 1
+
+                f_slice = f[x=𝟘]
+                d = f_slice .⋅ f_slice
+                @test scalarness(typeof(d)) === ScalarQuantity()
             end
         end
 
