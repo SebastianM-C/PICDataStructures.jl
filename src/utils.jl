@@ -78,6 +78,7 @@ dimensionality(::AbstractGrid{N}) where N = N
 dimensionality(::Type{<:AbstractGrid{N}}) where N = N
 dimensionality(::AbstractPICDataStructure{T,N,G}) where {T,N,G} = dimensionality(G)
 dimensionality(::Type{<:AbstractPICDataStructure{T,N,G}}) where {T,N,G} = dimensionality(G)
+dimensionality(::Type{<:NamedTuple{Names, NTuple{N,T}}}) where {Names, N, T} = N
 
 function mapgrid(f, grid::AbstractAxisGrid)
     map(f, Iterators.product(grid...))

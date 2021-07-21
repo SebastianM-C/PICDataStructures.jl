@@ -90,7 +90,7 @@ end
 
 # Indexing
 @propagate_inbounds function Base.getindex(::VectorQuantity, v::T, i) where T
-    N = dimensionality(T)
+    N = dimensionality(eltype(T))
     SVector{N}(unwrapdata(v)[i]...)
 end
 @propagate_inbounds function Base.setindex!(::VectorQuantity, f, v::SVector, i::Int)
