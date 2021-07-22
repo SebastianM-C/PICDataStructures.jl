@@ -3,13 +3,14 @@ include("typerecipes.jl")
 @recipe(FieldPlot) do scene
     Attributes(
         symmetric_cbar = false;
-        :lengthscale => 1.0f0,
-        # linewidth_factor = 1,
         :arrowsize => automatic,
-        :linewidth => automatic,
+        :arrowcolor => automatic,
         :color => automatic,
         :colormap => :viridis,
         :colorrange => automatic,
+        :linecolor => automatic,
+        :lengthscale => 1.0f0,
+        :linewidth => automatic,
         :lowclip => nothing,
         :highclip => nothing,
         :inspectable => theme(scene, :inspectable),
@@ -192,7 +193,7 @@ function MakieCore.plot!(sc::FieldPlot{<:Tuple{ScalarField{3}}})
     return sc
 end
 
-function MakieCore.plot!(sc::FieldPlot{<:Tuple{VectorField{N}}}) where N
+function MakieCore.plot!(sc::FieldPlot{<:Tuple{VectorField{3}}})
     f = sc[1]
 
     if hasunit(f)
@@ -211,14 +212,53 @@ function MakieCore.plot!(sc::FieldPlot{<:Tuple{VectorField{N}}}) where N
         valuerange
     end
 
-    arrows!(sc, _f;
-        arrowcolor = f_norm,
-        arrowsize = lift(v->norm(v), _f),
-        linecolor = f_norm,
-        # sc.lengthscale,
+    arrows!(sc, normed_f;
+        # arrowscale = @lift(norm($_f)/$maxarrow),
+        # lengthscale = @lift(norm($_f)/$maxarrow),
         # sc.linewidth,
-        markerspace = SceneSpace,
-        sc.color,
+        # markerspace = SceneSpace,
+        color = f_norm,
+        sc.colormap,
+        sc.colorrange,
+        sc.highclip,
+        sc.lowclip,
+        sc.inspectable
+    )
+
+    return sc
+end
+
+function MakieCore.plot!(sc::FieldPlot{<:Tuple{VectorField{2}}})
+    f = sc[1]
+
+    if hasunit(f)
+        _f = @lift ustrip($f)
+    else
+        _f = f
+    end
+
+    f_norm = @lift vec(norm.($_f))
+    replace_automatic!(sc, :linecolor) do
+        f_norm
+    end
+    replace_automatic!(sc, :arrowcolor) do
+        sc.linecolor
+    end
+    maxarrow = @lift maximum(norm.($_f))
+    # normed_f = @lift $_f ./ $maxarrow
+
+    # linewidth = @lift $(sc.linewidth_factor)*$arrow_norm
+    valuerange = @lift extrema($f_norm)
+    replace_automatic!(sc, :colorrange) do
+        valuerange
+    end
+
+    arrows!(sc, _f;
+        arrowsize = lift(v->norm(v)/maxarrow[]*1.4, _f),
+        sc.arrowcolor,
+        lengthscale = 3,
+        linewidth = lift(v->norm(v)/maxarrow[]*0.7, _f),
+        sc.linecolor,
         sc.colormap,
         sc.colorrange,
         sc.highclip,

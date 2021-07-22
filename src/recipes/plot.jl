@@ -94,7 +94,7 @@ function plotdata(f::Observable;
         plt = scattervariable!(ax, f_approx; kwargs...)
     end
 
-    if is2D && cbar_orientation == :vertical
+    if cbar_orientation == :vertical
         Colorbar(figurepos[1,2], plt;
             width = 20,
             tellheight = false,
@@ -102,26 +102,11 @@ function plotdata(f::Observable;
             lowclip = plt.lowclip,
             label = cbar_label
         )
-    elseif is2D
+    else
         Colorbar(figurepos[1,2], plt;
             width = 20,
             vertical = false, flipaxis = false,
             tellheight = true,
-            highclip = plt.highclip,
-            lowclip = plt.lowclip,
-            label = cbar_label
-        )
-    else
-        if hasunit(first_f)
-            clims = @lift extrema(norm.(ustrip($f)))
-        else
-            clims = @lift extrema(norm.($f))
-        end
-        Colorbar(figurepos[1,2],
-            width = 20,
-            tellwidth = true,
-            colormap = :jet1,
-            limits = clims,
             highclip = plt.highclip,
             lowclip = plt.lowclip,
             label = cbar_label
