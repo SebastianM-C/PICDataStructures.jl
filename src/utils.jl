@@ -103,5 +103,5 @@ end
 
 function vectorfield(f, grid; name="")
     data = mapgrid(f, grid)
-    VectorField(data, grid, (:x,:y,:z); name)
+    VectorField(data, grid; name)
 end
