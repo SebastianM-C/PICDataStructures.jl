@@ -32,6 +32,8 @@ electricfield = vectorfield(grid) do (x,y,z)
     E(r, t, laser)
 end
 
+@test ndims(electricfield) == 3
+
 E_slice = selectdim(electricfield, :z, 0.)
 
 using CairoMakie

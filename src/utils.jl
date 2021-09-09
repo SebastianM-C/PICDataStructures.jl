@@ -78,6 +78,8 @@ dimensionality(::AbstractGrid{N}) where N = N
 dimensionality(::Type{<:AbstractGrid{N}}) where N = N
 dimensionality(::AbstractPICDataStructure{T,N,G}) where {T,N,G} = dimensionality(G)
 dimensionality(::Type{<:AbstractPICDataStructure{T,N,G}}) where {T,N,G} = dimensionality(G)
+# use Tuple{T, Vararg{T,N}} since NTuple{N,T} can have N==0
+dimensionality(::Type{<:NamedTuple{Names, Tuple{T, Vararg{T,N}}}}) where {Names, N, T} = N + 1
 
 function mapgrid(f, grid::AbstractAxisGrid)
     map(f, Iterators.product(grid...))
@@ -101,5 +103,5 @@ end
 
 function vectorfield(f, grid; name="")
     data = mapgrid(f, grid)
-    VectorField(data, grid, (:x,:y,:z); name)
+    VectorField(data, grid; name)
 end

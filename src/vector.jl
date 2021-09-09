@@ -28,15 +28,24 @@ end
 
 VectorField(data, grid; name="") = VectorField(data, grid, name)
 
-function VectorField(row_data::AbstractArray{T,M}, grid::G, names; name="") where {N, M, G, T<:SVector{N}}
-    @debug "Building $(N)D VectorField row-wise from $T"
+function VectorField(row_data::AbstractArray{T,M}, grid::G; name="") where {N,M,T<:SVector{N},G}
+    component_names = Val(staticnames(G))
+    VectorField(row_data, grid, component_names, name)
+end
+
+function VectorField(row_data::AbstractArray{T,M}, grid::G, ::Val{names}, name="") where {N, M, G, names, T<:SVector{N}}
+    # @debug "Building $(N)D VectorField row-wise from $T"
     ElType = NamedTuple{names, NTuple{N,recursive_bottom_eltype(row_data)}}
-    @debug "Got ElType $ElType"
+    # @debug "Got ElType $ElType"
     data = StructArray{ElType}(undef, size(row_data))
-    for i in eachindex(data, row_data)
-        data[i] = vector2nt(data, row_data[i])
-    end
+    fillvec!(data, row_data)
     VectorField{N}(data, grid, name)
+end
+
+@inbounds function fillvec!(target, data)
+    for i in eachindex(target, data)
+        target[i] = vector2nt(target, data[i])
+    end
 end
 
 function VectorVariable(data::D, grid::G, name) where {M, T, D <: AbstractArray{T,M}, G}
@@ -45,7 +54,7 @@ end
 
 VectorVariable(data, grid; name="") = VectorVariable(data, grid, name)
 
-function vector2nt(f, v::SArray{Tuple{N},T}) where {N,T}
+@inline function vector2nt(f, v::SArray{Tuple{N},T}) where {N,T}
     # @debug "Data type $(typeof(f.data)) and $(typeof(v))"
     names = propertynames(f)
     NamedTuple{names, NTuple{N,T}}(v)
@@ -90,7 +99,7 @@ end
 
 # Indexing
 @propagate_inbounds function Base.getindex(::VectorQuantity, v::T, i) where T
-    N = dimensionality(T)
+    N = dimensionality(eltype(T))
     SVector{N}(unwrapdata(v)[i]...)
 end
 @propagate_inbounds function Base.setindex!(::VectorQuantity, f, v::SVector, i::Int)

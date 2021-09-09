@@ -7,4 +7,5 @@ using Test, SafeTestsets
     @safetestset "Scalar quantities" begin include("scalar.jl") end
     @safetestset "Vector quantities" begin include("vector.jl") end
     @safetestset "Plotting" begin include("plots.jl") end
+    @safetestset "Integrations" begin include("lasertypes.jl") end
 end
