@@ -54,3 +54,11 @@ function MakieCore.convert_arguments(P::PointBased, g::ParticlePositions)
     @debug "PointBased ParticlePositions"
     convert_arguments(P, g...)
 end
+
+function MakieCore.convert_arguments(P::Type{<:Hist}, f::ScalarVariable)
+    @debug "ScalarVariable histogram"
+    _f = hasunit(f) ? ustrip(f) : f
+    data = unwrapdata(_f)
+
+    convert_arguments(P, data)
+end
