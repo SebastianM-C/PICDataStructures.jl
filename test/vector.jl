@@ -238,6 +238,8 @@ end
                 c = v × v
                 @test all(iszero.(c))
                 nameof(c) == "3D × 3D"
+                l = getdomain(v) × v
+                @test nameof(l) == "r × 3D"
             end
         end
     end
