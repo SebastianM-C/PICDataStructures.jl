@@ -30,7 +30,8 @@ using Unitful
 using Unitful: Units
 # Plotting
 # Track what remains to be moved over to MakieCore
-using Makie: @lift, lift, Arrows, Contour, Figure, Colorbar, Axis,
+using Makie: @lift, lift, Arrows, Contour, Hist,
+    Figure, Colorbar, Axis,
     AxisAspect, DataAspect, replace_automatic!,
     Point, Vec, LScene, SceneSpace,
     arrows!, contour!,
