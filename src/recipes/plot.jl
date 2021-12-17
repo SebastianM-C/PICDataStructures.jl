@@ -13,7 +13,6 @@ of the input type of `f` and adds a colorbar.
 - `xlabel`: The labes of the x axis of the figure. By default is determined with [`axisnames`](@ref)
 - `ylabel`: The labes of the y axis of the figure. By default is determined with [`axisnames`](@ref)
 - `zlabel`: The labes of the z axis of the figure. By default is determined with [`axisnames`](@ref)
-- `title`: The figure title. Empty (`""`) by default
 - `downsample_size`: Thw approximate downsample size for the input data.
 By default (`:default`), it uses the heuristic values in [`downsample`](@ref).
 If you want to avoid downsampling the data, use `nothing`.
@@ -24,7 +23,9 @@ Otherwise, the argument is the approximate maiximun size along any direction.
 - `filename`: The filename to use if saving the plot.
 
 Any additional Keyword arguments are passed to the internal plotting function
-([`fieldplot`](@ref) or [`scattervariable`](@ref)).
+([`fieldplot`](@ref) or [`scattervariable`](@ref)). If you specify an `axis` keyword argument
+using the standard Makie `NamedTuple` syntax, you can pass custom axis keywords,
+such as `axis=(xticks=LinearTicks(10),)`.
 """
 plotdata(f::AbstractPICDataStructure; kwargs...) = plotdata(Observable(f); kwargs...)
 
@@ -34,7 +35,6 @@ function plotdata(f::Observable;
     xlabel = :auto,
     ylabel = :auto,
     zlabel = :auto,
-    title = "",
     downsample_size = :default,
     aspect_ratio = :default,
     cbar_orientation = :vertical,
@@ -49,8 +49,7 @@ function plotdata(f::Observable;
         @debug "2D plots"
         if dimensionality(first_f) == 1
             xlabel = xlabel == :auto ? only(axisnames(first_f)) : xlabel
-            # ylabel = nameof(f)
-            ylabel = ""
+            ylabel = ylabel == :auto ? nameof(first_f) : ylabel
             aspect = aspect_ratio == :default ? AxisAspect(1) : aspect_ratio
         else
             _xlabel, _ylabel = axisnames(first_f)
@@ -59,18 +58,25 @@ function plotdata(f::Observable;
             aspect = aspect_ratio == :default ? DataAspect() : aspect_ratio
         end
 
-        ax = Axis(figurepos[1,1];
-            xlabel, ylabel,
-            title,
-            aspect
-        )
+        if haskey(kwargs, :axis)
+            ax = Axis(figurepos[1, 1];
+                xlabel, ylabel,
+                aspect,
+                kwargs[:axis]...
+            )
+        else
+            ax = Axis(figurepos[1, 1];
+                xlabel, ylabel,
+                aspect
+            )
+        end
     else
         _xlabel, _ylabel, _zlabel = axisnames(first_f)
         xlabel = xlabel == :auto ? _xlabel : xlabel
         ylabel = ylabel == :auto ? _ylabel : ylabel
         zlabel = zlabel == :auto ? _zlabel : zlabel
 
-        ax = LScene(figurepos[1,1];
+        ax = LScene(figurepos[1, 1];
             axis = (
                 names = (axisnames = (xlabel, ylabel, zlabel),),
             ),
