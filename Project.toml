@@ -1,7 +1,7 @@
 name = "PICDataStructures"
 uuid = "cb18667b-f199-4b8b-b886-9916fef47a26"
 authors = ["Sebastian Micluța-Câmpeanu <m.c.sebastian95@gmail.com> and contributors"]
-version = "0.5.8"
+version = "0.5.9"
 
 [deps]
 ArrayInterface = "4fba245c-0d91-5ea0-9b3e-6abc04ee57a9"
