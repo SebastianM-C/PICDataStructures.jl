@@ -256,6 +256,7 @@ end
             @test hash(u_grid) == hash(unitless_grid)
             @test ustrip(u"mm", grid).x[1] == 1000
             @test ustrip(u"mm", grid).y[1] == -1000
+            @test uconvert(u"cm", grid).x[1] == 100u"cm"
             @test propertynames(u_grid) == propertynames(grid)
         end
 

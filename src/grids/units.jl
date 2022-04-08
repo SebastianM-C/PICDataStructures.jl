@@ -21,8 +21,8 @@ for (f,_f) in zip((:ustrip, :uconvert), (:_ustrip, :_uconvert))
             u_grid = map.(g->$f(unit, g), grid_axes)
 
             names = propertynames(grid)
-            mins = ($f).(minimum(grid))
-            maxs = ($f).(maximum(grid))
+            mins = ($f).(unit, minimum(grid))
+            maxs = ($f).(unit, maximum(grid))
 
             return ParticlePositions(u_grid...; names, mins, maxs)
         end
