@@ -66,12 +66,12 @@ function _ustrip(x::StepRange)
 end
 
 function _ustrip(x::StepRangeLen)
-    ref = ustrip(x.ref)
-    step = ustrip(x.step)
+    ref = ustrip(first(x))
+    st = ustrip(step(x))
     len = x.len
     offset = x.offset
 
-    StepRangeLen(ref, step, len, offset)
+    StepRangeLen(ref, st, len, offset)
 end
 
 function Unitful.ustrip(grid::AxisGrid)
