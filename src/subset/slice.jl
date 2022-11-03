@@ -89,6 +89,14 @@ function Base.dropdims(::VectorQuantity, f; dims)
     newstruct(f, data, grid)
 end
 
+function Base.dropdims(::ScalarQuantity, f; dims)
+    dim = dir_to_idx.(dims)
+    data = dropdims(unwrapdata(f); dims=dim)
+    grid = dropdims(getdomain(f); dims)
+
+    newstruct(f, data, grid)
+end
+
 function dropgriddims(f; dims)
     grid = getdomain(f)
     data = unwrapdata(f)
