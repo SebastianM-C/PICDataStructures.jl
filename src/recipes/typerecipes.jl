@@ -5,6 +5,13 @@ function MakieCore.convert_arguments(P::DiscreteSurface, f::ScalarField)
     convert_arguments(P, grid..., data)
 end
 
+function MakieCore.convert_arguments(P::ContinuousSurface, f::ScalarField)
+    @debug "ScalarField SurfaceLike"
+    grid, data = unwrap(f)
+
+    convert_arguments(P, grid..., data)
+end
+
 function MakieCore.convert_arguments(P::VolumeLike, f::ScalarField{3})
     @debug "ScalarField VolumeLike"
     grid, data = unwrap(f)
@@ -46,7 +53,7 @@ function MakieCore.convert_arguments(P::Type{<:Contour}, f::ScalarField{3})
     # 3D contour plots need the VolumeLike trait
     # plotting from the recipe creates a Contour{T} where T which defaults to SurfaceLike
     # In order to fix the problem, we create the correct type here
-    P_fixed = Contour{Tuple{typeof.(grid)..., typeof(data)}}
+    P_fixed = Contour{Tuple{typeof.(grid)...,typeof(data)}}
     convert_arguments(P_fixed, grid..., data)
 end
 

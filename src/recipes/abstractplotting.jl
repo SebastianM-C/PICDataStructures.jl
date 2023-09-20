@@ -165,8 +165,8 @@ function MakieCore.plot!(sc::FieldPlot{<:Tuple{ScalarField{2}}})
     heatmap!(sc, grid..., data;
         sc.colorrange,
         sc.colormap,
-        sc.highclip,
-        sc.lowclip,
+        # sc.highclip,
+        # sc.lowclip,
         sc.inspectable
     )
 

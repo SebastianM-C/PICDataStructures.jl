@@ -1,7 +1,7 @@
 name = "PICDataStructures"
 uuid = "cb18667b-f199-4b8b-b886-9916fef47a26"
 authors = ["Sebastian Micluța-Câmpeanu <m.c.sebastian95@gmail.com> and contributors"]
-version = "0.5.9"
+version = "0.5.10"
 
 [deps]
 ArrayInterface = "4fba245c-0d91-5ea0-9b3e-6abc04ee57a9"
@@ -18,7 +18,6 @@ RecursiveArrayTools = "731186ca-8d62-57ce-b412-fbd966d074cd"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 StructArrays = "09ab397b-f2b6-538f-b94a-2f83cf4a842a"
 Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
-UnitfulRecipes = "42071c24-d89e-48dd-8a24-8a12d9b8861f"
 
 [compat]
 ArrayInterface = "2.14, 3.0, 4, 5, 6"
@@ -26,15 +25,14 @@ BangBang = "0.3"
 CoordinateTransformations = "0.6"
 ImageTransformations = "0.8, 0.9"
 IntervalSets = "0.5, 0.6, 0.7"
-Makie = "0.18"
-MakieCore = "0.5"
+Makie = "0.18, 0.19"
+MakieCore = "0.5, 0.6"
 Observables = "0.5"
 RecipesBase = "1.1"
 RecursiveArrayTools = "2.0"
 StaticArrays = "1.0"
 StructArrays = "0.5, 0.6"
 Unitful = "1.0"
-UnitfulRecipes = "1.1"
 julia = "1.5, 1.6"
 
 [extras]

@@ -40,8 +40,8 @@ using Observables
 using MakieCore
 using MakieCore: convert_arguments, @recipe, theme, Attributes,
     automatic,
-    PointBased, DiscreteSurface, VolumeLike
-import RecipesBase, UnitfulRecipes
+    PointBased, DiscreteSurface, ContinuousSurface, VolumeLike
+import RecipesBase
 
 abstract type AbstractPICDataStructure{T,N,G} <: AbstractArray{T,N} end
 
