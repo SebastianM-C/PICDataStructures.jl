@@ -22,7 +22,7 @@ ScalarVariable(data, grid; name="") = ScalarVariable(data, grid, name)
 @inline scalarness(::Type{<:ScalarVariable}) = ScalarQuantity()
 
 # Indexing
-@propagate_inbounds Base.getindex(::ScalarQuantity, f, i) = unwrapdata(f)[i]
+@propagate_inbounds Base.getindex(::ScalarQuantity, f, i) = unwrapdata(f)[i...]
 @propagate_inbounds Base.setindex!(::ScalarQuantity, f, v, i) = unwrapdata(f)[i] = v
 
 Base.eltype(::ScalarQuantity, f::Type{<:AbstractPICDataStructure{T}}) where T = T
